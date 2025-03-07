@@ -1,6 +1,7 @@
 package cn.edu.sdu.java.server.payload.request;
 
 
+import cn.edu.sdu.java.server.util.CommonMethod;
 import cn.edu.sdu.java.server.util.DateTimeTool;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,33 +37,16 @@ public class DataRequest {
         return obj.toString();
     }
     public Boolean getBoolean(String key){
-        Object obj = data.get(key);
-        if(obj == null)
-            return false;
-        if(obj instanceof Boolean)
-            return (Boolean)obj;
-        return "true".equals(obj.toString());
+        return CommonMethod.getBoolean(data, key);
     }
 
     public List<?> getList(String key){
-        Object obj = data.get(key);
-        if(obj == null)
-            return new ArrayList<>();
-        if(obj instanceof List)
-            return (List<?>)obj;
-        else
-            return new ArrayList<>();
+        return CommonMethod.getList(data, key);
     }
     public Map<String,Object> getMap(String key){
         if(data == null)
             return new HashMap<>();
-        Object obj = data.get(key);
-        if(obj == null)
-            return new HashMap<>();
-        if(obj instanceof Map)
-            return (Map<String,Object>)obj;
-        else
-            return new HashMap<>();
+        return CommonMethod.getMap(data, key);
     }
 
     public Integer getInteger(String key) {
@@ -112,22 +96,10 @@ public class DataRequest {
         }
     }
     public Date getDate( String key) {
-        Object obj = data.get(key);
-        if(obj == null)
-            return null;
-        if(obj instanceof Date)
-            return (Date)obj;
-        String str = obj.toString();
-        return DateTimeTool.formatDateTime(str,"yyyy-MM-dd");
+        return CommonMethod.getDate(data, key);
     }
     public Date getTime(String key) {
-        Object obj = data.get(key);
-        if(obj == null)
-            return null;
-        if(obj instanceof Date)
-            return (Date)obj;
-        String str = obj.toString();
-        return DateTimeTool.formatDateTime(str,"yyyy-MM-dd HH:mm:ss");
+        return CommonMethod.getTime(data, key);
     }
     public Integer getCurrentPage(){
         Integer cPage = this.getInteger("currentPage");
