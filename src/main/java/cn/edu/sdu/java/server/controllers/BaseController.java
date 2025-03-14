@@ -45,6 +45,11 @@ public class BaseController {
         return baseService.getMenuList(dataRequest);
     }
 
+    @PostMapping("/getDataBaseUserName")
+    public DataResponse getDataBaseUserName(@Valid @RequestBody DataRequest dataRequest) {
+        return baseService.getDataBaseUserName();
+    }
+
     /**
      * 获取所有角色信息的列表
      * 前台请求参数 无
