@@ -10,6 +10,7 @@ package cn.edu.sdu.java.server.models;
  * Integer studentNum 学生人数
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -27,12 +28,12 @@ public class Teacher  {
     @Id
         private Integer personId;
 
-    @OneToOne
+        @OneToOne
         @JoinColumn(name="personId")
+        @JsonIgnore
         private Person person;
 
         @Size(max = 50)
-//        @NotBlank
         private String degree;
 
         @Size(max = 50)

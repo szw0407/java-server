@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.RestController;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.services.TeacherService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/student")
+@RequestMapping("/api/teacher")
 public class TeacherController {
     private final TeacherService teacherService;
 
@@ -24,7 +24,7 @@ public class TeacherController {
     
     @PostMapping("/getTeacherList")
     @PreAuthorize("hasRole('ADMIN')")
-    public DataResponse getTeacherList(@Valid @RequestBody DataRequest dataRequest) {
-        return (DataResponse) teacherService.getTeacherMaps(dataRequest);
+    public DataResponse getTeacherList(@RequestBody DataRequest dataRequest) {
+        return teacherService.getTeacherList(dataRequest);
     }
 }
