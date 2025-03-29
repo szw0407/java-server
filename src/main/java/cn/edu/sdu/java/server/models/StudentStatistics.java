@@ -15,7 +15,7 @@ public class StudentStatistics {
     private Integer statisticsId;
 
     @OneToOne
-    @JoinColumn(name="personId")
+    @JoinColumn(name="person_id")
     private  Student student;
 
     private  Integer courseCount;

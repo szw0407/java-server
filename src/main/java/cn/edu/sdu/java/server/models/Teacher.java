@@ -29,7 +29,7 @@ public class Teacher  {
         private Integer personId;
 
         @OneToOne
-        @JoinColumn(name="personId")
+        @JoinColumn(name="person_id")
         @JsonIgnore
         private Person person;
 

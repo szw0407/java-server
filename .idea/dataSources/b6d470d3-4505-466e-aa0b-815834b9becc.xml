@@ -929,7 +929,7 @@ java_1_34|schema||java_1_34||UPDATE|G</Grants>
     </schema>
     <schema id="289" parent="1" name="java_1_34">
       <Current>1</Current>
-      <LastIntrospectionLocalTimestamp>2025-03-08.06:12:43</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2025-03-29.05:38:27</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb3_general_ci</CollationName>
     </schema>
     <schema id="290" parent="1" name="performance_schema">
@@ -1192,7 +1192,7 @@ java_1_34|schema||java_1_34||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="350" parent="297" name="id">
-      <AutoIncrement>1</AutoIncrement>
+      <AutoIncrement>17</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
@@ -1228,12 +1228,15 @@ java_1_34|schema||java_1_34||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="358" parent="298" name="person_id">
-      <AutoIncrement>9</AutoIncrement>
+      <AutoIncrement>29</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
     </column>
     <column id="359" parent="298" name="type">
+      <Comment>0 超管&#xd;
+1 老师&#xd;
+2 学生</Comment>
       <Position>2</Position>
       <StoredType>varchar(2)|0s</StoredType>
     </column>
@@ -1329,7 +1332,7 @@ java_1_34|schema||java_1_34||UPDATE|G</Grants>
       <UnderlyingIndexName>PRIMARY</UnderlyingIndexName>
     </key>
     <column id="381" parent="300" name="score_id">
-      <AutoIncrement>2</AutoIncrement>
+      <AutoIncrement>3</AutoIncrement>
       <NotNull>1</NotNull>
       <Position>1</Position>
       <StoredType>int|0s</StoredType>
