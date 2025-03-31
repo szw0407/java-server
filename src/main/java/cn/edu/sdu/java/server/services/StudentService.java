@@ -97,6 +97,19 @@ public class StudentService {
     }
 
 
+    public boolean checkStudentIdExists(String studentId) {
+        if (studentId == null || studentId.isEmpty()) {
+            return false;
+        }
+        try {
+            Integer id = Integer.parseInt(studentId);
+            return studentRepository.existsById(id);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+
 
     public DataResponse studentDelete(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");  //获取student_id值
@@ -163,7 +176,7 @@ public class StudentService {
             u.setPersonId(personId);
             u.setUserName(num);
             u.setPassword(password);
-            u.setUserType(userTypeRepository.findByName(EUserType.ROLE_STUDENT));
+            u.setUserType(userTypeRepository.findByName(EUserType.ROLE_STUDENT.name()));
             u.setCreateTime(DateTimeTool.parseDateTime(new Date()));
             u.setCreatorId(CommonMethod.getPersonId());
             userRepository.saveAndFlush(u); //插入新的User记录
