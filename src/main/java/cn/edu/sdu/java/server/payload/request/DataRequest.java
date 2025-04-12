@@ -96,22 +96,10 @@ public class DataRequest {
         }
     }
     public Date getDate( String key) {
-        Object obj = data.get(key);
-        if(obj == null)
-            return null;
-        if(obj instanceof Date)
-            return (Date)obj;
-        String str = obj.toString();
-        return DateTimeTool.formatDateTime(str,"yyyy-MM-dd");
+        return CommonMethod.getDate(data, key);
     }
     public Date getTime(String key) {
-        Object obj = data.get(key);
-        if(obj == null)
-            return null;
-        if(obj instanceof Date)
-            return (Date)obj;
-        String str = obj.toString();
-        return DateTimeTool.formatDateTime(str,"yyyy-MM-dd HH:mm:ss");
+        return CommonMethod.getTime(data, key);
     }
     public Integer getCurrentPage(){
         Integer cPage = this.getInteger("currentPage");
