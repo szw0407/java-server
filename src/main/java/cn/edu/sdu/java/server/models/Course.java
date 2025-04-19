@@ -33,7 +33,7 @@ public class Course  {
     private String name;
     private Integer credit;
     @ManyToOne
-    @JoinColumn(name="pre_course_id")
+    @JoinColumn(name="pre_course_id")   // 前序课程的主键 course_id
     private Course preCourse;
     @Size(max = 12)
     private String coursePath;
