@@ -1,9 +1,11 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Course;
+import cn.edu.sdu.java.server.models.Score;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.CourseRepository;
+import cn.edu.sdu.java.server.repositorys.ScoreRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -11,8 +13,10 @@ import java.util.*;
 @Service
 public class CourseService {
     private final CourseRepository courseRepository;
-    public CourseService(CourseRepository courseRepository) {
+    private final ScoreRepository scoreRepository;
+    public CourseService(CourseRepository courseRepository, ScoreRepository scoreRepository) {
         this.courseRepository = courseRepository;
+        this.scoreRepository = scoreRepository;
     }
 
     public DataResponse getCourseList(DataRequest dataRequest) {
@@ -74,7 +78,7 @@ public class CourseService {
     public DataResponse courseDelete(DataRequest dataRequest) {
         Integer courseId = dataRequest.getInteger("courseId");
         Optional<Course> op;
-        Course c= null;
+        Course c= null;  // 课程对象,默认为null
         if(courseId != null) {
             op = courseRepository.findById(courseId);
             if(op.isPresent()) {
@@ -84,5 +88,130 @@ public class CourseService {
         }
         return CommonMethod.getReturnMessageOK();
     }
+
+    public DataResponse getCourseByNum(DataRequest dataRequest) {
+        String num = dataRequest.getString("num");
+        Optional<Course> op;
+        Course c= null;  // 课程对象,默认为null
+        if(num != null) {
+            op = courseRepository.findByNum(num);
+            if(op.isPresent()) {
+                c = op.get();
+            }
+        }
+        Map<String,Object> m = new HashMap<>();
+        if(c != null) {
+            m.put("courseId", c.getCourseId()+"");
+            m.put("num",c.getNum());
+            m.put("name",c.getName());
+            m.put("credit",c.getCredit()+"");
+            m.put("coursePath",c.getCoursePath());
+            Course pc =c.getPreCourse();
+            if(pc != null) {
+                m.put("preCourse",pc.getName());
+                m.put("preCourseId",pc.getCourseId());
+            }
+        }
+        return CommonMethod.getReturnData(m);
+    }
+
+    public DataResponse getCourseByName(DataRequest dataRequest) {
+        String name = dataRequest.getString("name");
+        List<Course> cList = courseRepository.findByName(name);  //数据库查询操作
+        List<Map<String,Object>> dataList = new ArrayList<>();
+        Map<String,Object> m;
+        Course pc;
+        for (Course c : cList) {
+            m = new HashMap<>();
+            m.put("courseId", c.getCourseId()+"");
+            m.put("num",c.getNum());
+            m.put("name",c.getName());
+            m.put("credit",c.getCredit()+"");
+            m.put("coursePath",c.getCoursePath());
+            pc =c.getPreCourse();
+            if(pc != null) {
+                m.put("preCourse",pc.getName());
+                m.put("preCourseId",pc.getCourseId());
+            }
+            dataList.add(m);
+        }
+        return CommonMethod.getReturnData(dataList);
+    }
+
+    public DataResponse getCourseByNumName(DataRequest dataRequest) {
+        String numName = dataRequest.getString("numName");
+        if(numName == null)
+            numName = "";
+        List<Course> cList = courseRepository.findCourseListByNumName(numName);  //数据库查询操作
+        List<Map<String,Object>> dataList = new ArrayList<>();
+        Map<String,Object> m;
+        Course pc;
+        for (Course c : cList) {
+            m = new HashMap<>();
+            m.put("courseId", c.getCourseId()+"");
+            m.put("num",c.getNum());
+            m.put("name",c.getName());
+            m.put("credit",c.getCredit()+"");
+            m.put("coursePath",c.getCoursePath());
+            pc =c.getPreCourse();
+            if(pc != null) {
+                m.put("preCourse",pc.getName());
+                m.put("preCourseId",pc.getCourseId());
+            }
+            dataList.add(m);
+        }
+        return CommonMethod.getReturnData(dataList);
+    }
+
+    public DataResponse courseCreate(DataRequest dataRequest) {
+        String num = dataRequest.getString("num");
+        String name = dataRequest.getString("name");
+        String coursePath = dataRequest.getString("coursePath");
+        Integer credit = dataRequest.getInteger("credit");
+        Integer preCourseId = dataRequest.getInteger("preCourseId");
+        Optional<Course> op;
+        Course c= null;
+
+        op = courseRepository.findByNum(num);
+        if(op.isPresent())
+            c= op.get();
+        if(c != null)
+            return CommonMethod.getReturnMessage(1,"课程编号已存在");
+
+        c = new Course();
+        Course pc =null;
+        if(preCourseId != null) {
+            op = courseRepository.findById(preCourseId);
+            if(op.isPresent())
+                pc = op.get();
+        }
+        c.setNum(num);
+        c.setName(name);
+        c.setCredit(credit);
+        c.setCoursePath(coursePath);
+        c.setPreCourse(pc);
+        courseRepository.save(c);
+        return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse getCourseParticipants(DataRequest dataRequest) {
+        Integer courseId = dataRequest.getInteger("courseId");
+        Map<String, Object> response = new HashMap<>();
+
+        // check score repo to get the relationships
+        List<Score> scoreList = scoreRepository.findByStudentCourse(0, courseId);
+
+        for(int i = 0; i<scoreList.size(); i++) {
+            Score score = scoreList.get(i);
+            Map<String, Object> item = new HashMap<>();
+            item.put("personId", score.getStudent().getPersonId());
+            item.put("studentNum", score.getStudent().getPerson().getNum());
+            item.put("studentName", score.getStudent().getPerson().getName());
+            item.put("className", score.getStudent().getClassName());
+            response.put(Integer.toString(i), item);
+        }
+        return CommonMethod.getReturnData(response);
+    }
+
 
 }

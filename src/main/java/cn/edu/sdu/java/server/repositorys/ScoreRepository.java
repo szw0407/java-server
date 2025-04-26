@@ -1,5 +1,6 @@
 package cn.edu.sdu.java.server.repositorys;
 
+import cn.edu.sdu.java.server.models.Course;
 import cn.edu.sdu.java.server.models.Score;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
