@@ -1,13 +1,11 @@
 package cn.edu.sdu.java.server.models;
 
 import jakarta.persistence.*;
+import java.util.List;
 /*
- * Score 成绩表实体类  保存成绩的的基本信息信息，
- * Integer scoreId 人员表 score 主键 score_id
- * Student student 关联学生 student_id 关联学生的主键 student_id
- * Course course 关联课程 course_id 关联课程的主键 course_id
- * Integer mark 成绩
- * Integer ranking 排名
+ * 教学计划
+ *
+ *
  */
 import lombok.Getter;
 import lombok.Setter;
@@ -32,5 +30,10 @@ public class TeachPlan {
 
     private Integer semester;
     private Integer year;
+
+    private Float grade;   // 老师被评价的得分
+
+    @OneToMany(mappedBy = "teachPlan", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<Score> scores;
 
 }

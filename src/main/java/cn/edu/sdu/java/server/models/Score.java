@@ -30,6 +30,10 @@ public class Score {
     @JoinColumn(name = "course_id")
     private Course course;
 
+    @ManyToOne
+    @JoinColumn(name = "teach_plan_id")
+    private TeachPlan teachPlan;
+
     private Integer mark;
     private Integer ranking;
 
