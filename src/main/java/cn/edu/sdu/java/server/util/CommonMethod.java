@@ -16,7 +16,6 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.math.RoundingMode;
 import java.util.*;
 
 /**
@@ -371,7 +370,7 @@ public class CommonMethod {
         if (f == null)
             return 0d;
         BigDecimal bg = new BigDecimal(f);
-        return bg.setScale(2, RoundingMode.HALF_UP).doubleValue();
+        return bg.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
     }
     public static String ObjectToJSon(Object o){
         try {
