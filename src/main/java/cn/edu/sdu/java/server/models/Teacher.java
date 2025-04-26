@@ -1,6 +1,5 @@
 package cn.edu.sdu.java.server.models;
 
-
 /*
  * Teacher 数据模型，对应数据库中的teacher表
  * Integer personId 人员表 person 主键 person_id
@@ -13,10 +12,11 @@ package cn.edu.sdu.java.server.models;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -24,26 +24,19 @@ import java.sql.Date;
 @Table(	name = "teacher",
         uniqueConstraints = {
         })
-public class Teacher  {
+public class Teacher {
     @Id
-        private Integer personId;
+    private Integer personId;
 
-        @OneToOne
-        @JoinColumn(name="person_id")
-        @JsonIgnore
-        private Person person;
-
-        @Size(max = 50)
-        private String degree;
-
-        @Size(max = 50)
-//        @NotBlank
-        private String title;
-
-
-        private Date enterTime;
-
-        private Integer studentNum;
-
-
+    @OneToOne
+    @JoinColumn(name="person_id")
+    @JsonIgnore
+    private Person person;
+    @Size(max = 50)
+    private String title;
+    @Size(max = 50)
+    private String degree;
+    private Integer studentNum;
+    private Date enterTime;
 }
+

@@ -25,10 +25,11 @@ public class DataRequest {
         data.put(key,obj);
     }
     public Object get(String key){
+        if(!data.containsKey(key)) return null;
         return data.get(key);
     }
 
-    public String getString(String key){
+    public String getString(String key){//从请求中获得查询的几个字
         Object obj = data.get(key);
         if(obj == null)
             return null;
@@ -50,7 +51,7 @@ public class DataRequest {
     }
 
     public Integer getInteger(String key) {
-        if(data == null)
+        if(data == null || !data.containsKey(key))
             return null;
         Object obj = data.get(key);
         if(obj == null)

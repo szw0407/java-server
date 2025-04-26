@@ -39,6 +39,8 @@ public class BaseService {
     private static final Logger log = LoggerFactory.getLogger(BaseService.class);
     @Value("${attach.folder}")    //环境配置变量获取
     private String attachFolder;  //服务器端数据存储
+    @Value("${spring.datasource.username}")    //环境配置变量获取
+    private String dataBaseUserName;  //服务器端数据存储
     private final PasswordEncoder encoder;  //密码服务自动注入
     private final UserRepository userRepository;  //用户数据操作自动注入
     private final MenuInfoRepository menuInfoRepository; //菜单数据操作自动注入
@@ -53,6 +55,9 @@ public class BaseService {
         this.userTypeRepository = userTypeRepository;
     }
 
+    public DataResponse getDataBaseUserName() {
+        return CommonMethod.getReturnData(dataBaseUserName);
+    }
     /**
      *  getDictionaryTreeNode 获取数据字典节点树根节点
      * @return MyTreeNode 数据字典树根节点
