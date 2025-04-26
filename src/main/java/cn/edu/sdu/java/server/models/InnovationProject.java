@@ -15,17 +15,12 @@ import jakarta.persistence.GeneratedValue;
 @Getter
 @Setter
 @Entity
-@Table(name = "social_practice",
-        uniqueConstraints = {
-                // 学生同时间段只能有一个实践记录
-                @UniqueConstraint(columnNames = {"person_id", "practice_time"})
-        })
-public class SocialPractice {
-
+@Table(name = "innovation_project",
+        uniqueConstraints = {})
+public class InnovationProject {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; // 独立自增主键
-
 
     @ManyToOne
     @JoinColumn(name = "student_id", referencedColumnName = "personId")
@@ -33,24 +28,15 @@ public class SocialPractice {
     private Student student;
 
 
-    @Column(name = "practice_time")
-    private String practiceTime;  // 日期类型
-
     @Size(max = 100)
-    @Column(name = "location")
-    private String practiceLocation; // 实践地点
+    @Column(name = "type")
+    private String type;
 
-    @Size(max = 100)
-    @Column(name = "organization")
-    private String practiceOrganization; // 实践单位
+    @Column(name = "time")
+    private String time;
 
     @Size(max = 500)
     @Column(name = "description")
-    private String practiceDescription; // 实践描述
-
-
-    @Column(name = "duration_days")
-    private Integer durationDays; // 实践天数
-
+    private String description;
 
 }

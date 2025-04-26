@@ -38,5 +38,10 @@ public class SocialPracticeController {
         return socialPracticeService.practiceDelete(dataRequest);
     }
 
+    @PostMapping("/getPracticeInfo")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    public DataResponse getPracticeInfo(@Valid @RequestBody DataRequest dataRequest) {
+        return socialPracticeService.getPracticeInfo(dataRequest);
+    }
 
 }

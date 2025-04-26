@@ -178,7 +178,6 @@ public class TeacherService {
         t.setTitle(CommonMethod.getString(form, "title"));
         t.setDegree(CommonMethod.getString(form, "degree"));
         t.setStudentNum(CommonMethod.getInteger(form, "studentNum"));
-        t.setEnterTime(DateTimeTool.parseDateTime(CommonMethod.getString(form, "enterTime")));
         teacherRepository.save(t);  //修改保存学生信息
         systemService.modifyLog(t,isNew);
         return CommonMethod.getReturnData(t.getPersonId());  // 将personId返回前端

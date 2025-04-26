@@ -29,7 +29,7 @@ public class Student {
     @OneToOne
     @JoinColumn(name="person_id")
     @JsonIgnore
-    private Person person;
+    private Person person;//（成员是person，并非person_id，数据库中表的存储用person_id）
 
     @Size(max = 20)
     private String major;

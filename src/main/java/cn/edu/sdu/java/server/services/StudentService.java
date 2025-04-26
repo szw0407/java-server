@@ -91,8 +91,8 @@ public class StudentService {
     }
 
     public DataResponse getStudentList(DataRequest dataRequest) {
-        String numName = dataRequest.getString("numName");
-        List<Map<String,Object>> dataList = getStudentMapList(numName);
+        String numName = dataRequest.getString("numName");//（返回值为空）
+        List<Map<String,Object>> dataList = getStudentMapList(numName);//（获取全部的学生列表）（查询操作）
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
     }
 
@@ -132,7 +132,7 @@ public class StudentService {
     }
 
     public DataResponse studentEditSave(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
+        Integer personId = dataRequest.getInteger("personId"); //(通过主键，这里先获取主键id对应的id值)（最开始一定为空？）
         Map<String,Object> form = dataRequest.getMap("form"); //参数获取Map对象
         String num = CommonMethod.getString(form, "num");  //Map 获取属性的值
         Student s = null;

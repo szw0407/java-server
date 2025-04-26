@@ -4,14 +4,40 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8064faa4-5735-4abb-b9c0-a24d6e2ffa0f" name="Changes" comment="" />
+    <list default="true" id="8064faa4-5735-4abb-b9c0-a24d6e2ffa0f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/controllers/SocialPracticeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/controllers/SocialPracticeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/models/AcademicCompetition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/models/AcademicCompetition.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/models/SocialPractice.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/models/SocialPractice.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/models/Student.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/models/Student.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/payload/request/DataRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/payload/request/DataRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/repositorys/SocialPracticeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/repositorys/SocialPracticeRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/repositorys/StudentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/repositorys/StudentRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/services/SocialPracticeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/services/SocialPracticeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/services/StudentService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/services/StudentService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/services/TeacherService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/services/TeacherService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/util/CommonMethod.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/edu/sdu/java/server/util/CommonMethod.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Interface" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/data/spring-data-commons/3.4.2/spring-data-commons-3.4.2.jar!/org/springframework/data/mapping/PropertyReferenceException.class" root0="SKIP_INSPECTION" />
+    <setting file="jar://$MAVEN_REPOSITORY$/org/springframework/spring-context/6.2.2/spring-context-6.2.2.jar!/org/springframework/context/ApplicationContextException.class" root0="SKIP_INSPECTION" />
   </component>
   <component name="MavenImportPreferences">
     <option name="generalSettings">
@@ -25,24 +51,27 @@
   &quot;associatedIndex&quot;: 4
 }</component>
   <component name="ProjectId" id="2vwT6dDVVkwerXntW6yJGpQ8F4k" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="1" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.JavaServerApplication.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "jyx-dev",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/teach-2025/java-server/src",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "reference.settings.project.maven.archetype.catalogs"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.JavaServerApplication.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;jyx-dev&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/teach-update/java-fx&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.59195405&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.archetype.catalogs&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="JavaServerApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="cn.edu.sdu.java.server.JavaServerApplication" />
