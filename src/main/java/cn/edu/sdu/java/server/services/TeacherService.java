@@ -137,7 +137,7 @@ public class TeacherService {
         if (t == null) {
             p = new Person();
             p.setNum(num);
-            p.setType("2");
+            p.setType("3");
             personRepository.saveAndFlush(p);  //插入新的Person记录
             personId = p.getPersonId();
             String password = encoder.encode("123456");
@@ -145,7 +145,7 @@ public class TeacherService {
             u.setPersonId(personId);
             u.setUserName(num);
             u.setPassword(password);
-            u.setUserType(userTypeRepository.findByName(EUserType.valueOf(EUserType.ROLE_TEACHER.name())));
+            u.setUserType(userTypeRepository.findByName(EUserType.ROLE_TEACHER.name()));
             u.setCreateTime(DateTimeTool.parseDateTime(new Date()));
             u.setCreatorId(CommonMethod.getPersonId());
             userRepository.saveAndFlush(u); //插入新的User记录
