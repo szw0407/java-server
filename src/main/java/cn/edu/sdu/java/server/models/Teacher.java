@@ -17,6 +17,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -38,5 +39,10 @@ public class Teacher {
     private String degree;
     private Integer studentNum;
     private Date enterTime;
+    
+    // 添加与TeacherTeachPlanRole的一对多关系
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<TeacherTeachPlanRole> teachPlanRoles;
 }
 

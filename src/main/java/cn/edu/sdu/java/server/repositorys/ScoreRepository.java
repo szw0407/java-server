@@ -20,4 +20,16 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
 
     List<Score> findScoresByStudent_PersonId(Integer personId);
     
+    // 根据学生ID和教学班级ID查询成绩
+    List<Score> findByStudentPersonIdAndTeachPlan_TeachPlanId(Integer studentId, Integer teachPlanId);
+    
+    // 查询教学班级的所有成绩并按分数降序排序
+    List<Score> findByTeachPlan_TeachPlanIdOrderByMarkDesc(Integer teachPlanId);
+    
+    // 查询教学班级的所有成绩
+    List<Score> findByTeachPlan_TeachPlanId(Integer teachPlanId);
+    
+    // 查询学生在特定学期的所有成绩
+    @Query("from Score s where s.student.personId = ?1 and s.teachPlan.year = ?2 and s.teachPlan.semester = ?3")
+    List<Score> findByStudentAndYearAndSemester(Integer studentId, Integer year, Integer semester);
 }

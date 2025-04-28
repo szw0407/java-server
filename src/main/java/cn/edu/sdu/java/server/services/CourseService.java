@@ -193,8 +193,8 @@ public class CourseService {
             data.put("teachPlanId", plan.getTeachPlanId());
             data.put("courseId", plan.getCourse().getCourseId());
             data.put("courseName", plan.getCourse().getName());
-            data.put("teacherId", plan.getTeacher().getPersonId());
-            data.put("teacherName", plan.getTeacher().getPerson().getName());
+//            data.put("teacherId", plan.get.getPersonId());
+//            data.put("teacherName", plan.getTeacher().getPerson().getName());
             data.put("year", plan.getYear());
             data.put("semester", plan.getSemester());
             dataList.add(data);
