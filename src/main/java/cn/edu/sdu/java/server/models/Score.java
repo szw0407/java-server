@@ -30,7 +30,10 @@ public class Score {
     private Integer ranking;
 
     @ManyToOne
-    @JoinColumn(name = "teach_plan_id")
-    private TeachingClass teachingClass;
+    @JoinColumn(name = "class_schedule_id")
+    private ClassSchedule classSchedule;
 
+    public Course getCourse() {
+        return classSchedule.getCourse();
+    }
 }

@@ -141,7 +141,7 @@ public class StudentService {
 
     public DataResponse studentDelete(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");  //获取student_id值
-        Student s = null;
+        Student s;
         Optional<Student> op;
         if (personId != null && personId > 0) {
             op = studentRepository.findById(personId);   //查询获得实体对象
@@ -249,8 +249,8 @@ public class StudentService {
         Course c;
         for (Score s : sList) {
             m = new HashMap<>();
-            c = s.getCourse();
-            m.put("studentNum", s.getStudent().getPerson().getNum());
+            c = s.getClassSchedule().getCourse();
+//            m.put("studentNum", s.getStudent().getPerson().getNum());
             m.put("scoreId", s.getScoreId());
             m.put("courseNum", c.getNum());
             m.put("courseName", c.getName());

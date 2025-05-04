@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Table(	name = "teaching_class",
+@Table(	name = "class_schedule",
         uniqueConstraints = {
         })
 public class ClassSchedule {
@@ -43,20 +43,10 @@ public class ClassSchedule {
     private String classLocation;
 
     // 上课的老师
-    @ManyToMany(mappedBy = "teachingClass")
-    @JoinTable(name = "teach_plan",
-            joinColumns = @JoinColumn(name = "teach_plan_id"),
-            inverseJoinColumns = @JoinColumn(name = "teacher_id"))
+    @ManyToMany()
+    @JoinTable(name = "teach_plan"
+    )
     private List<Teacher> teachers;
 
-    // 选课的学生
-    @OneToMany(mappedBy = "teachingClass")
-    @JoinTable(
-            name = "score",
-            joinColumns = @JoinColumn(name = "teach_plan_id"),
-            inverseJoinColumns = @JoinColumn(name = "person_id")
-
-    )
-    private List<Student> students;
 
 }

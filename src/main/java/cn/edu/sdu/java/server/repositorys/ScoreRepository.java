@@ -1,5 +1,6 @@
 package cn.edu.sdu.java.server.repositorys;
 
+import cn.edu.sdu.java.server.models.ClassSchedule;
 import cn.edu.sdu.java.server.models.Course;
 import cn.edu.sdu.java.server.models.Score;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,21 +16,10 @@ import java.util.List;
 @Repository
 public interface ScoreRepository extends JpaRepository<Score,Integer> {
     List<Score> findByStudentPersonId(Integer personId);
-    @Query(value="from Score where (?1=0 or student.personId=?1) and (?2=0 or course.courseId=?2)" )
-    List<Score> findByStudentCourse(Integer personId, Integer courseId);
 
-    List<Score> findScoresByStudent_PersonId(Integer personId);
-    
-    // 根据学生ID和教学班级ID查询成绩
-    List<Score> findByStudentPersonIdAndTeachPlan_TeachPlanId(Integer studentId, Integer teachPlanId);
-    
-    // 查询教学班级的所有成绩并按分数降序排序
-    List<Score> findByTeachPlan_TeachPlanIdOrderByMarkDesc(Integer teachPlanId);
-    
-    // 查询教学班级的所有成绩
-    List<Score> findByTeachPlan_TeachPlanId(Integer teachPlanId);
-    
-    // 查询学生在特定学期的所有成绩
-    @Query("from Score s where s.student.personId = ?1 and s.teachPlan.year = ?2 and s.teachPlan.semester = ?3")
-    List<Score> findByStudentAndYearAndSemester(Integer studentId, Integer year, Integer semester);
+    // find by student and course_id via link CourseSchedule
+    List<Score> findByClassSchedule_Course_CourseId(Integer courseId);
+
+    List<Score> findByClassSchedule_ClassScheduleId(Integer classScheduleId);
+
 }

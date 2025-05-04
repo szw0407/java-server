@@ -34,10 +34,6 @@ public class CourseController {
         return courseService.courseDelete(dataRequest);
     }
 
-    @GetMapping("/TeachPlans")
-    public DataResponse getTeachPlans(@RequestParam ("course_id") Integer courseId, @RequestParam ("year") Integer yr, @RequestParam ("semester") Integer sm, @RequestParam ("teacher_id") Integer teacherId) {
-        return courseService.getTeachPlans(courseId, yr, sm, teacherId);
-    }
 
 
 }

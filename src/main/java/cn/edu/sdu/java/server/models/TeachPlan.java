@@ -11,8 +11,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @Entity
@@ -32,7 +30,7 @@ public class TeachPlan {
     // bind teach class
     @ManyToOne
     @JoinColumn(name = "teaching_class_id")
-    private TeachingClass teachingClass;
+    private ClassSchedule classSchedule;
 
     // bind teacher
     @ManyToOne

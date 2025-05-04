@@ -174,41 +174,6 @@ public class CourseService {
     }
 
 
-    public DataResponse getTeachPlans(Integer year, Integer semester, Integer courseID, Integer teacherID) {
-        List<TeachPlan> plans;
-        // if null assign 0
-        if (year == null) year = 0;
-        if (semester == null) semester = 0;
-        if (courseID == null) courseID = 0;
-        if (teacherID == null) teacherID = 0;
-
-        plans = teachPlanRepository.filterByCourseTeacherSemesterYear(courseID, teacherID, semester, year);
-
-        List<Map<String, Object>> dataList = new ArrayList<>();
-        for (TeachPlan plan : plans) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("teachPlanId", plan.getTeachPlanId());
-            data.put("courseId", plan.getCourse().getCourseId());
-            data.put("courseName", plan.getCourse().getName());
-//            data.put("teacherId", plan.get.getPersonId());
-//            data.put("teacherName", plan.getTeacher().getPerson().getName());
-            data.put("year", plan.getYear());
-            data.put("semester", plan.getSemester());
-            dataList.add(data);
-        }
-        return CommonMethod.getReturnData(dataList);
-    }
-
-    public DataResponse getTeachPlanInCurrentSemester(Integer courseID, Integer teacherID) {
-        Calendar calendar = Calendar.getInstance();
-        int year = calendar.get(Calendar.YEAR);
-        int semester = switch (calendar.get(Calendar.MONTH)) {
-            case Calendar.JANUARY, Calendar.FEBRUARY, Calendar.MARCH, Calendar.APRIL, Calendar.MAY, Calendar.JUNE -> 2;
-            case Calendar.JULY, Calendar.AUGUST -> 3;
-            default -> 1;
-        };
-
-        return getTeachPlans(year, semester, courseID, teacherID);
-    }
+    
 
 }
