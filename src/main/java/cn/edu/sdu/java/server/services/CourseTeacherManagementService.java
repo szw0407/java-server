@@ -1,21 +1,17 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Course;
-import cn.edu.sdu.java.server.models.TeachPlan;
 import cn.edu.sdu.java.server.models.Teacher;
 import cn.edu.sdu.java.server.models.TeacherTeachPlanRole;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.CourseRepository;
-import cn.edu.sdu.java.server.repositorys.TeachPlanRepository;
 import cn.edu.sdu.java.server.repositorys.TeacherRepository;
 import cn.edu.sdu.java.server.repositorys.TeacherTeachPlanRoleRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
-import cn.edu.sdu.java.server.util.DateTimeTool;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 课程教师管理服务

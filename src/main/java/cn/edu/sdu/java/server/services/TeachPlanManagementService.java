@@ -10,7 +10,6 @@ package cn.edu.sdu.java.server.services;
  */
 
 
-import cn.edu.sdu.java.server.models.TeachPlan;
 import cn.edu.sdu.java.server.models.Teacher;
 import cn.edu.sdu.java.server.models.TeacherTeachPlanRole;
 import cn.edu.sdu.java.server.payload.response.DataResponse;

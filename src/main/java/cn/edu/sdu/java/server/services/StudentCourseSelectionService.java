@@ -3,7 +3,6 @@ package cn.edu.sdu.java.server.services;
 import cn.edu.sdu.java.server.models.ClassSchedule;
 import cn.edu.sdu.java.server.models.Student;
 import cn.edu.sdu.java.server.models.StudentCourseSelection;
-import cn.edu.sdu.java.server.models.TeachPlan;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.*;

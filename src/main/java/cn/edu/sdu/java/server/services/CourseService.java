@@ -1,15 +1,12 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.Course;
-import cn.edu.sdu.java.server.models.Score;
-import cn.edu.sdu.java.server.models.TeachPlan;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import org.springframework.stereotype.Service;
 
-import java.sql.DataTruncation;
 import java.util.*;
 
 @Service
