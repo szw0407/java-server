@@ -39,10 +39,6 @@ public class Teacher {
     private String degree;
     private Integer studentNum;
     private Date enterTime;
-    
-    // 添加与TeacherTeachPlanRole的一对多关系
-    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<TeacherTeachPlanRole> teachPlanRoles;
+
 }
 

@@ -26,11 +26,11 @@ public class Score {
     @JoinColumn(name = "person_id")
     private Student student;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
-
     private Integer mark;
     private Integer ranking;
+
+    @ManyToOne
+    @JoinColumn(name = "teach_plan_id")
+    private TeachingClass teachingClass;
 
 }

@@ -28,7 +28,7 @@ public class StudentCourseSelection {
 
     @ManyToOne
     @JoinColumn(name = "teach_plan_id")
-    private TeachPlan teachPlan;
+    private TeachingClass teachingClass;
 
     // 选课时间
     private Date selectionTime;
