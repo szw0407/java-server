@@ -19,7 +19,7 @@ import java.util.List;
 @Table(	name = "teaching_class",
         uniqueConstraints = {
         })
-public class TeachingClass {
+public class ClassSchedule {
 
     /*
     * 教学班级
@@ -27,11 +27,11 @@ public class TeachingClass {
     * */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer teachingClassId;
+    private Integer classScheduleId;
 
     @ManyToOne
     @JoinColumn(name = "course_id")
-    private Course course;
+    Course course;
 
     private Integer classNumber;
 
