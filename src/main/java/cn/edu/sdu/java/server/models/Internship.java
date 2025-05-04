@@ -24,14 +24,14 @@ public class Internship {
 
 
     @ManyToOne
-    @JoinColumn(name = "student_id", referencedColumnName = "personId")
+    @JoinColumn(name = "student_id", referencedColumnName = "person_id")
     @JsonIgnore
     private Student student;
 
-    @Column(name = "startTime")
+    @Column(name = "start_time")
     private String startTime;  //
 
-    @Column(name = "endTime")
+    @Column(name = "end_time")
     private String endTime;
 
     @Size(max = 100)

@@ -43,24 +43,6 @@ public class CourseEvaluation {
     @Column(length = 1000)
     private String comment;
 
-    // 教学内容评分
-    @Min(1)
-    @Max(5)
-    private Integer contentRating;
-
-    // 教学方法评分
-    @Min(1)
-    @Max(5)
-    private Integer methodRating;
-
-    // 教学态度评分
-    @Min(1)
-    @Max(5)
-    private Integer attitudeRating;
-
-    // 是否匿名评价
-    private Boolean isAnonymous;
-
     // 评价时间
     private Date evaluationTime;
 

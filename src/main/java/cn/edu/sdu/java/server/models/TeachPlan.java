@@ -25,11 +25,6 @@ public class TeachPlan {
 
     // 课程计划的鉴别码，用于区分开设相同课程的不同教学班
     private Integer teachPlanCode;
-
-    // 移除单一教师关联，改为通过TeacherTeachPlanRole实现多教师
-    // @ManyToOne
-    // @JoinColumn(name = "person_id")
-    // private Teacher teacher;
     
     // 教学班名称
     private String className;

@@ -206,11 +206,9 @@ public class StudentCourseSelectionService {
             selectionMap.put("courseName", teachPlan.getCourse().getName());
             selectionMap.put("courseNum", teachPlan.getCourse().getNum());
             selectionMap.put("credit", teachPlan.getCourse().getCredit());
-            selectionMap.put("courseType", teachPlan.getCourse().getCourseType());
             selectionMap.put("className", teachPlan.getClassName());
             selectionMap.put("teachPlanCode", teachPlan.getTeachPlanCode());
             selectionMap.put("status", selection.getStatus());
-            selectionMap.put("department", teachPlan.getCourse().getDepartment());
             
             // 获取上课时间地点信息
             List<ClassSchedule> schedules = classScheduleRepository.findByTeachPlan_TeachPlanId(teachPlan.getTeachPlanId());
@@ -350,9 +348,7 @@ public class StudentCourseSelectionService {
             courseMap.put("courseName", course.getName());
             courseMap.put("courseNum", course.getNum());
             courseMap.put("credit", course.getCredit());
-            courseMap.put("courseType", course.getCourseType());
             courseMap.put("description", course.getDescription());
-            courseMap.put("department", course.getDepartment());
             courseMap.put("teachPlans", teachPlans);
             
             availableCoursesList.add(courseMap);

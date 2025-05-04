@@ -39,15 +39,8 @@ public class Course  {
     @Size(max = 12)
     private String coursePath;
     
-    // 课程类型：REQUIRED-必修、ELECTIVE_REQUIRED-选择性必修、ELECTIVE-选修、SPECIAL-特殊课程
-    @Size(max = 20)
-    private String courseType;
-    
     // 课程描述
     @Size(max = 500)
     private String description;
-    
-    // 课程所属院系
-    @Size(max = 50)
-    private String department;
+
 }
