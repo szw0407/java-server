@@ -1,4 +1,5 @@
 package cn.edu.sdu.java.server.models;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 /*
  * Score 成绩表实体类  保存成绩的的基本信息信息，
@@ -27,13 +28,14 @@ public class TeachPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer teachPlanId;
 
+
     // bind teach class
     @ManyToOne
-    @JoinColumn(name = "teaching_class_id")
+    @JoinColumn(name = "class_schedule_class_schedule_id")
     private ClassSchedule classSchedule;
 
     // bind teacher
     @ManyToOne
-    @JoinColumn(name = "teacher_id")
+    @JoinColumn(name = "teachers_person_id")
     private Teacher teacher;
 }
