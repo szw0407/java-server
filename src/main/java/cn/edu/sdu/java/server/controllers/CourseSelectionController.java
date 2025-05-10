@@ -1,0 +1,59 @@
+package cn.edu.sdu.java.server.controllers;
+
+import cn.edu.sdu.java.server.payload.request.DataRequest;
+import cn.edu.sdu.java.server.payload.response.DataResponse;
+import cn.edu.sdu.java.server.services.CourseSelectionService;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 学生选课退课控制器
+ */
+@CrossOrigin(origins = "*", maxAge = 3600)
+@RestController
+@RequestMapping("/api/courseselection")
+public class CourseSelectionController {
+
+    private final CourseSelectionService courseSelectionService;
+
+    public CourseSelectionController(CourseSelectionService courseSelectionService) {
+        this.courseSelectionService = courseSelectionService;
+    }
+
+    /**
+     * 获取学生的已选课程列表
+     */
+    @PostMapping("/getSelectedCourses")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    public DataResponse getSelectedCourses(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.getSelectedCourses(dataRequest);
+    }
+
+    /**
+     * 获取学生可选的课程列表
+     */
+    @PostMapping("/getAvailableCourses")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    public DataResponse getAvailableCourses(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.getAvailableCourses(dataRequest);
+    }
+
+    /**
+     * 选课
+     */
+    @PostMapping("/selectCourse")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    public DataResponse selectCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.selectCourse(dataRequest);
+    }
+
+    /**
+     * 退课
+     */
+    @PostMapping("/dropCourse")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    public DataResponse dropCourse(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.dropCourse(dataRequest);
+    }
+}
