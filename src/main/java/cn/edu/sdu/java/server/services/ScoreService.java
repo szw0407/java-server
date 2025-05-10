@@ -7,6 +7,7 @@ import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
+import cn.edu.sdu.java.server.repositorys.ClassScheduleRepository;
 import cn.edu.sdu.java.server.repositorys.CourseRepository;
 import cn.edu.sdu.java.server.repositorys.ScoreRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
@@ -19,11 +20,12 @@ public class ScoreService {
     private final CourseRepository courseRepository;
     private final ScoreRepository scoreRepository;
     private final StudentRepository studentRepository;
-
-    public ScoreService(CourseRepository courseRepository, ScoreRepository scoreRepository, StudentRepository studentRepository) {
+    private final ClassScheduleRepository classScheduleRepository;
+    public ScoreService(CourseRepository courseRepository, ScoreRepository scoreRepository, StudentRepository studentRepository, ClassScheduleRepository classScheduleRepository) {
         this.courseRepository = courseRepository;
         this.scoreRepository = scoreRepository;
         this.studentRepository = studentRepository;
+        this.classScheduleRepository = classScheduleRepository;
     }
     public OptionItemList getStudentItemOptionList( DataRequest dataRequest) {
         List<Student> sList = studentRepository.findStudentListByNumName("");  //数据库查询操作
@@ -50,7 +52,7 @@ public class ScoreService {
         Integer courseId = dataRequest.getInteger("courseId");
         if(courseId == null)
             courseId = 0;
-        List<Score> sList = scoreRepository.findByStudentCourse(personId, courseId);  //数据库查询操作
+        List<Score> sList = scoreRepository.findByStudentPersonIdAndCourseId(personId, courseId);  //数据库查询操作
         List<Map<String,Object>> dataList = new ArrayList<>();
         Map<String,Object> m;
         for (Score s : sList) {
@@ -71,7 +73,7 @@ public class ScoreService {
     }
     public DataResponse scoreSave(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
-        Integer courseId = dataRequest.getInteger("courseId");
+        Integer classId = dataRequest.getInteger("classId");
         Integer mark = dataRequest.getInteger("mark");
         Integer scoreId = dataRequest.getInteger("scoreId");
         Optional<Score> op;
@@ -84,7 +86,10 @@ public class ScoreService {
         if(s == null) {
             s = new Score();
             s.setStudent(studentRepository.findById(personId).get());
-            s.setCourse(courseRepository.findById(courseId).get());
+//            s.setCourse(courseRepository.findById(courseId).get());
+            s.setClassSchedule(
+                    classScheduleRepository.findById(classId).get()
+            );
         }
         s.setMark(mark);
         scoreRepository.save(s);

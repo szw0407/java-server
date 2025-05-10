@@ -18,7 +18,7 @@ import jakarta.persistence.GeneratedValue;
 @Table(name = "social_practice",
         uniqueConstraints = {
                 // 学生同时间段只能有一个实践记录
-                @UniqueConstraint(columnNames = {"person_id", "practice_time"})
+                @UniqueConstraint(columnNames = {"student_id", "practice_time"})
         })
 public class SocialPractice {
 
@@ -28,7 +28,7 @@ public class SocialPractice {
 
 
     @ManyToOne
-    @JoinColumn(name = "student_id", referencedColumnName = "personId")
+    @JoinColumn(name = "student_id", referencedColumnName = "person_id")
     @JsonIgnore
     private Student student;
 

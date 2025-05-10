@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Entity
-@Table(	name = "academicCompetition",
+@Table(	name = "academic_competition",
         uniqueConstraints = {
         })
 
@@ -22,7 +22,7 @@ public class AcademicCompetition {
 
 
     @ManyToOne
-    @JoinColumn(name = "student_id", referencedColumnName = "personId")
+    @JoinColumn(name = "student_id", referencedColumnName = "person_id")
     @JsonIgnore
     private Student student;
 

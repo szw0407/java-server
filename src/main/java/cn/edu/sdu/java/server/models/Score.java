@@ -26,11 +26,14 @@ public class Score {
     @JoinColumn(name = "person_id")
     private Student student;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id")
-    private Course course;
-
     private Integer mark;
     private Integer ranking;
 
+    @ManyToOne
+    @JoinColumn(name = "class_schedule_id")
+    private ClassSchedule classSchedule;
+
+    public Course getCourse() {
+        return classSchedule.getCourse();
+    }
 }

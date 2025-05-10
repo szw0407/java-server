@@ -30,9 +30,8 @@ spring:
     enabled:false
 attach:
   folder: /teach-2025/
-#logging:
-#  config: classpath:loggback.xml
 logging:
+  config: classpath:logback.xml
   level:
     root: info
 springdoc:

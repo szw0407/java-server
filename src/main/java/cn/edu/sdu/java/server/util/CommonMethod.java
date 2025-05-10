@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -370,7 +371,7 @@ public class CommonMethod {
         if (f == null)
             return 0d;
         BigDecimal bg = new BigDecimal(f);
-        return bg.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        return bg.setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
     public static String ObjectToJSon(Object o){
         try {

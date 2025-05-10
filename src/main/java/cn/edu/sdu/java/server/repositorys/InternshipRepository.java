@@ -15,9 +15,9 @@ public interface InternshipRepository extends JpaRepository<Internship,Integer>{
     Optional<Internship> findById(Integer id);
     @Query(value="from Internship where ?1=0 or student.personId=?1" )
     List<Internship> findByStudentId(Integer studentId);
-    @Query(value="from Score where (?1=0 or student.personId=?1) and (?2=0 or course.courseId=?2)" )
+    @Query(value="from Score where (?1=0 or student.personId=?1) and (?2=0 or classSchedule.course.courseId=?2)" )
     List<Score> findByStudentCourse(Integer personId, Integer courseId);
 
-    @Query(value="from Score where student.personId=?1 and (?2=0 or course.name like %?2%)" )
+    @Query(value="from Score where student.personId=?1 and (?2=0 or classSchedule.course.name like %?2%)" )
     List<Score> findByStudentCourse(Integer personId, String courseName);
 }
