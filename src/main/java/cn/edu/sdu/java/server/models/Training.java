@@ -21,7 +21,7 @@ public class Training {
     private Integer id;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", referencedColumnName = "personId")
+    @JoinColumn(name = "student_id", referencedColumnName = "person_id")
     @JsonIgnore
     private Student student;
 

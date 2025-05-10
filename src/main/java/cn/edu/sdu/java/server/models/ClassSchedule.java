@@ -1,5 +1,4 @@
 package cn.edu.sdu.java.server.models;
-
 import jakarta.persistence.*;
 /*
  * Score 成绩表实体类  保存成绩的的基本信息信息，
@@ -11,29 +10,43 @@ import jakarta.persistence.*;
  */
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
-@Table(	name = "score",
+@Table(	name = "class_schedule",
         uniqueConstraints = {
         })
-public class Score {
+public class ClassSchedule {
+
+    /*
+    * 教学班级
+    *
+    * */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer scoreId;
+    private Integer classScheduleId;
 
     @ManyToOne
-    @JoinColumn(name = "person_id")
-    private Student student;
+    @JoinColumn(name = "course_id")
+    Course course;
 
-    private Integer mark;
-    private Integer ranking;
+    private Integer classNumber;
 
-    @ManyToOne
-    @JoinColumn(name = "class_schedule_id")
-    private ClassSchedule classSchedule;
+    private String semester;
+    private String year;
 
-    public Course getCourse() {
-        return classSchedule.getCourse();
-    }
+    // 上课的时间和地点
+    private String classTime;
+    private String classLocation;
+
+    // 上课的老师
+    @ManyToMany()
+    @JoinTable(name = "teach_plan"
+    )
+    private List<Teacher> teachers;
+
+
 }

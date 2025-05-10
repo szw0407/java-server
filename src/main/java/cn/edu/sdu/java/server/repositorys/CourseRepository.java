@@ -19,4 +19,10 @@ public interface CourseRepository extends JpaRepository<Course,Integer> {
 
     Optional<Course> findByNum(String num);
     List<Course> findByName(String name);
+
+//    @Query(value = "FROM Course c JOIN Score sc ON c.courseId = sc.course.courseId JOIN Student st ON sc.student.personId = st.personId WHERE c.courseId = ?1")
+//    List<Course> findStudentByCourseId(Integer personId, Integer courseId);
+
+
+
 }

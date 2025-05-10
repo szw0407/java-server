@@ -1,5 +1,5 @@
 package cn.edu.sdu.java.server.models;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 /*
  * Score 成绩表实体类  保存成绩的的基本信息信息，
@@ -11,29 +11,31 @@ import jakarta.persistence.*;
  */
 import lombok.Getter;
 import lombok.Setter;
+
 @Getter
 @Setter
 @Entity
-@Table(	name = "score",
+@Table(	name = "teach_plan",
         uniqueConstraints = {
         })
-public class Score {
+public class TeachPlan {
+
+    /*
+     * 教学班级
+     *
+     * */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer scoreId;
+    private Integer teachPlanId;
 
+
+    // bind teach class
     @ManyToOne
-    @JoinColumn(name = "person_id")
-    private Student student;
-
-    private Integer mark;
-    private Integer ranking;
-
-    @ManyToOne
-    @JoinColumn(name = "class_schedule_id")
+    @JoinColumn(name = "class_schedule_class_schedule_id")
     private ClassSchedule classSchedule;
 
-    public Course getCourse() {
-        return classSchedule.getCourse();
-    }
+    // bind teacher
+    @ManyToOne
+    @JoinColumn(name = "teachers_person_id")
+    private Teacher teacher;
 }
