@@ -35,4 +35,6 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     @Query("from Score where student.personId = ?1 and classSchedule.semester = ?2 and classSchedule.year = ?3")
     List<Score> findStudentSemesterCourses(Integer personId, String semester, String year);
 
+    // 查询某个教学班某一个学生的成绩
+    Score findByClassSchedule_ClassScheduleIdAndStudentPersonId(Integer classScheduleId, Integer personId);
 }

@@ -132,11 +132,12 @@ public class GradingService {
         }
         
         for (Map<String, Object> scoreMap : scoreList) {
-            Integer scoreId = (Integer) scoreMap.get("scoreId");
+            Integer sId = (Integer) scoreMap.get("studentId");
             Integer mark = (Integer) scoreMap.get("mark");
             
-            if (scoreId != null && mark != null) {
-                Optional<Score> scoreOp = scoreRepository.findById(scoreId);
+            if (sId != null && mark != null) {
+                Optional<Score> scoreOp = Optional.ofNullable(scoreRepository.findByClassSchedule_ClassScheduleIdAndStudentPersonId(
+                        classScheduleId, sId));
                 if (scoreOp.isPresent()) {
                     Score score = scoreOp.get();
                     score.setMark(mark);
