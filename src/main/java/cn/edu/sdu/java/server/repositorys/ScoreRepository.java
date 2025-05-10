@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+
 /*
  * Score 数据操作接口，主要实现Score数据的查询操作
  * List<Score> findByStudentPersonId(Integer personId);  根据关联的Student的student_id查询获得List<Score>对象集合,  命名规范
@@ -21,5 +23,16 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     List<Score> findByClassSchedule_Course_CourseId(Integer courseId);
 
     List<Score> findByClassSchedule_ClassScheduleId(Integer classScheduleId);
+
+    // 根据学生ID和课程ID查询成绩记录，用于检查学生是否已选某课程
+    @Query("from Score where student.personId = ?1 and classSchedule.course.courseId = ?2")
+    List<Score> findByStudentPersonIdAndCourseId(Integer personId, Integer courseId);
+    
+    // 根据学生ID和教学班级ID查询成绩记录，用于检查学生是否已选某教学班级
+    Optional<Score> findByStudentPersonIdAndClassScheduleClassScheduleId(Integer personId, Integer classScheduleId);
+    
+    // 查询学生在特定学期的选课记录
+    @Query("from Score where student.personId = ?1 and classSchedule.semester = ?2 and classSchedule.year = ?3")
+    List<Score> findStudentSemesterCourses(Integer personId, String semester, String year);
 
 }
