@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+import static cn.edu.sdu.java.server.util.CommonMethod.getPersonId;
+
 /**
  * 学生选课退课服务
  */
@@ -42,12 +44,13 @@ public class CourseSelectionService {
      * 获取学生的已选课程列表
      */
     public DataResponse getSelectedCourses(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
+//        Integer personId = dataRequest.getInteger("personId");
         String semester = dataRequest.getString("semester");
+        Integer personId = getPersonId();
         String year = dataRequest.getString("year");
         
         if (personId == null) {
-            personId = CommonMethod.getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
+            personId = getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
             if (personId == null) {
                 return CommonMethod.getReturnMessageError("未能识别学生信息");
             }
@@ -93,7 +96,7 @@ public class CourseSelectionService {
         String year = dataRequest.getString("year");
         
         if (personId == null) {
-            personId = CommonMethod.getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
+            personId = getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
             if (personId == null) {
                 return CommonMethod.getReturnMessageError("未能识别学生信息");
             }
@@ -132,7 +135,12 @@ public class CourseSelectionService {
                 m.put("year", classSchedule.getYear());
                 m.put("classTime", classSchedule.getClassTime());
                 m.put("classLocation", classSchedule.getClassLocation());
-                
+                // 显示这个课程的有关老师
+                List<String> teachers = new ArrayList<>();
+                for (var teacher : classSchedule.getTeachers()) {
+                    teachers.add(teacher.getPerson().getName());
+                }
+                m.put("teachers", teachers);
                 // 标记该课程是否已经被学生选择（不同班级）
                 m.put("courseSelected", selectedCourseIds.contains(classSchedule.getCourse().getCourseId()));
                 
@@ -147,11 +155,11 @@ public class CourseSelectionService {
      * 选课
      */
     public DataResponse selectCourse(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
+        Integer personId = getPersonId();
         Integer classScheduleId = dataRequest.getInteger("classScheduleId");
         
         if (personId == null) {
-            personId = CommonMethod.getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
+            personId = getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
             if (personId == null) {
                 return CommonMethod.getReturnMessageError("未能识别学生信息");
             }
@@ -206,11 +214,12 @@ public class CourseSelectionService {
      * 退课
      */
     public DataResponse dropCourse(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
+//        Integer personId = dataRequest.getInteger("personId");
         Integer scoreId = dataRequest.getInteger("scoreId");
+        Integer personId = getPersonId();
         
         if (personId == null) {
-            personId = CommonMethod.getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
+            personId = getPersonId(); // 如果没有提供personId，则使用当前登录用户的ID
             if (personId == null) {
                 return CommonMethod.getReturnMessageError("未能识别学生信息");
             }
