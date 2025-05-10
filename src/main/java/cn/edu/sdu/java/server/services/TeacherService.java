@@ -75,6 +75,43 @@ public class TeacherService {
         m.put("enterTime", DateTimeTool.parseDateTime(t.getEnterTime()));
         return m;
     }
+    public Map<String, Object> getCurrentTeacherData(DataRequest dataRequest) {
+        Integer teacherId = dataRequest.getInteger("teacherId");
+        if (teacherId == null) {
+            throw new IllegalArgumentException("老师 ID 不能为空");
+        }
+
+        // 根据学生 ID 查询学生信息
+        Optional<Teacher> teacherOptional = teacherRepository.findById(teacherId);
+        if (teacherOptional.isEmpty()) {
+            throw new NoSuchElementException("未找到对应的老师信息");
+        }
+
+        // 获取学生实例
+        Teacher t = teacherOptional.get();
+        Map<String, Object> m = new HashMap<>();
+        m.put("title", t.getTitle());
+        m.put("degree", t.getDegree());
+        Person p = t.getPerson();
+        if (p == null) {
+            return m;
+        }
+        m.put("personId", t.getPersonId());
+        m.put("num", p.getNum());
+        m.put("name", p.getName());
+        m.put("dept", p.getDept());
+        m.put("card", p.getCard());
+        String gender = p.getGender();
+        m.put("gender", gender);
+        m.put("genderName", ComDataUtil.getInstance().getDictionaryLabelByValue("XBM", gender)); // 性别类型的值转换成数据类型名
+        m.put("birthday", p.getBirthday()); // 时间格式转换字符串
+        m.put("email", p.getEmail());
+        m.put("phone", p.getPhone());
+        m.put("address", p.getAddress());
+        m.put("introduce", p.getIntroduce());
+
+        return m;
+    }
     public DataResponse getTeacherList(DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
         List<Map<String,Object>> dataList = getTeacherMapList(numName);
@@ -145,7 +182,7 @@ public class TeacherService {
             u.setPersonId(personId);
             u.setUserName(num);
             u.setPassword(password);
-            u.setUserType(userTypeRepository.findByName(EUserType.valueOf(EUserType.ROLE_TEACHER.name())));
+            u.setUserType(userTypeRepository.findByName(EUserType.ROLE_TEACHER.name()));
             u.setCreateTime(DateTimeTool.parseDateTime(new Date()));
             u.setCreatorId(CommonMethod.getPersonId());
             userRepository.saveAndFlush(u); //插入新的User记录

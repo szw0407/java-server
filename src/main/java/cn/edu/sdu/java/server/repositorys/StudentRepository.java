@@ -22,6 +22,9 @@ public interface StudentRepository extends JpaRepository<Student,Integer> {
     Optional<Student> findByPersonNum(String num);
     List<Student> findByPersonName(String name);
 
+//    @Query(value = "from Student where peronId =?1")
+//    Optional<Student> findById(String studentId);
+
     @Query(value = "from Student where ?1='' or person.num like %?1% or person.name like %?1% ")
     List<Student> findStudentListByNumName(String numName);
     //大写还是小写？

@@ -49,6 +49,7 @@ public class StudentService {
         this.systemService = systemService;
     }
 
+
     public Map<String,Object> getMapFromStudent(Student s) {
         Map<String,Object> m = new HashMap<>();
         Person p;
@@ -94,6 +95,46 @@ public class StudentService {
         String numName = dataRequest.getString("numName");//（返回值为空）
         List<Map<String,Object>> dataList = getStudentMapList(numName);//（获取全部的学生列表）（查询操作）
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
+    }
+
+    public Map<String, Object> getCurrentStudentData(DataRequest dataRequest) {
+        // 从 dataRequest 中获取学生 ID
+        Integer studentId = dataRequest.getInteger("studentId");
+        if (studentId == null) {
+            throw new IllegalArgumentException("学生 ID 不能为空");
+        }
+
+        // 根据学生 ID 查询学生信息
+        Optional<Student> studentOptional = studentRepository.findByPersonPersonId(studentId);
+        if (studentOptional.isEmpty()) {
+            throw new NoSuchElementException("未找到对应的学生信息");
+        }
+
+        // 获取学生实例
+        Student s = studentOptional.get();
+        Map<String, Object> m = new HashMap<>();
+        m.put("major", s.getMajor());
+        m.put("className", s.getClassName());
+        Person p = s.getPerson();
+        if (p == null) {
+            return m;
+        }
+        m.put("personId", s.getPersonId());
+        m.put("num", p.getNum());
+        m.put("name", p.getName());
+        m.put("dept", p.getDept());
+        m.put("card", p.getCard());
+        String gender = p.getGender();
+        m.put("gender", gender);
+        m.put("genderName", ComDataUtil.getInstance().getDictionaryLabelByValue("XBM", gender)); // 性别类型的值转换成数据类型名
+        m.put("birthday", p.getBirthday()); // 时间格式转换字符串
+        m.put("email", p.getEmail());
+        m.put("phone", p.getPhone());
+        m.put("address", p.getAddress());
+        m.put("introduce", p.getIntroduce());
+
+        // 返回学生信息的 Map
+        return m;
     }
 
 
@@ -163,7 +204,7 @@ public class StudentService {
             u.setPersonId(personId);
             u.setUserName(num);
             u.setPassword(password);
-            u.setUserType(userTypeRepository.findByName(EUserType.ROLE_STUDENT));
+            u.setUserType(userTypeRepository.findByName(EUserType.ROLE_STUDENT.name()));
             u.setCreateTime(DateTimeTool.parseDateTime(new Date()));
             u.setCreatorId(CommonMethod.getPersonId());
             userRepository.saveAndFlush(u); //插入新的User记录
