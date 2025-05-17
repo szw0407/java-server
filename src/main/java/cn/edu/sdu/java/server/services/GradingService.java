@@ -56,13 +56,13 @@ public class GradingService {
         
         // 检查教师是否存在
         Optional<Teacher> teacherOp = teacherRepository.findById(teacherId);
-        if (!teacherOp.isPresent()) {
+        if (teacherOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("教师不存在");
         }
         
         // 检查教学班级是否存在
         Optional<ClassSchedule> classOp = classScheduleRepository.findById(classScheduleId);
-        if (!classOp.isPresent()) {
+        if (classOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("教学班级不存在");
         }
         
