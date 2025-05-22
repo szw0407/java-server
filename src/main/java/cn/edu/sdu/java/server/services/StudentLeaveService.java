@@ -94,7 +94,7 @@ public class StudentLeaveService {
         leave.setEndDate(CommonMethod.getDate(form, "endDate"));
         leave.setReason(CommonMethod.getString(form, "reason"));
         leave.setApproverId(CommonMethod.getInteger(form, "approverId"));
-        leave.setIsApproved(CommonMethod.getBoolean(form, "isApproved"));
+        //leave.setIsApproved(CommonMethod.getBoolean(form, "isApproved"));
 
         studentLeaveRepository.save(leave);
         return CommonMethod.getReturnMessageOK();
@@ -179,6 +179,24 @@ public class StudentLeaveService {
         map.put("approverId", leave.getApproverId()); // 添加审批人ID
         map.put("isApproved", leave.getIsApproved()); // 添加审批状态
         return map;
+    }
+
+    // 老师审批请假记录
+    public DataResponse approveLeave(DataRequest dataRequest) {
+        Integer leaveId = dataRequest.getInteger("leaveId");
+        Boolean isApproved = dataRequest.getBoolean("isApproved");
+
+        // 查找请假记录
+        Optional<StudentLeave> leaveOptional = studentLeaveRepository.findById(leaveId);
+        if (leaveOptional.isEmpty()) {
+            return CommonMethod.getReturnMessageError("请假记录不存在");
+        }
+
+        StudentLeave leave = leaveOptional.get();
+        leave.setIsApproved(isApproved); // 更新审批状态
+        studentLeaveRepository.save(leave); // 保存更改
+
+        return CommonMethod.getReturnMessageOK("审批成功");
     }
 }
 

@@ -38,6 +38,6 @@ public class StudentLeave {
     @Column
     private Integer approverId; // 审批人ID
 
-    @Column(nullable = false)
+    @Column
     private Boolean isApproved; // 是否审批
 }
