@@ -105,7 +105,7 @@ public class StudentService {
         }
 
         // 根据学生 ID 查询学生信息
-        Optional<Student> studentOptional = studentRepository.findById(studentId);
+        Optional<Student> studentOptional = studentRepository.findByPersonPersonId(studentId);
         if (studentOptional.isEmpty()) {
             throw new NoSuchElementException("未找到对应的学生信息");
         }
@@ -141,7 +141,7 @@ public class StudentService {
 
     public DataResponse studentDelete(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");  //获取student_id值
-        Student s;
+        Student s = null;
         Optional<Student> op;
         if (personId != null && personId > 0) {
             op = studentRepository.findById(personId);   //查询获得实体对象
@@ -249,8 +249,8 @@ public class StudentService {
         Course c;
         for (Score s : sList) {
             m = new HashMap<>();
-            c = s.getClassSchedule().getCourse();
-//            m.put("studentNum", s.getStudent().getPerson().getNum());
+            c = s.getCourse();
+            m.put("studentNum", s.getStudent().getPerson().getNum());
             m.put("scoreId", s.getScoreId());
             m.put("courseNum", c.getNum());
             m.put("courseName", c.getName());
