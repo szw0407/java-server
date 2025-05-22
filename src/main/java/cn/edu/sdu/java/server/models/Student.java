@@ -31,7 +31,6 @@ public class Student {
     private Integer personId;
 
     @OneToOne
-    @MapsId // Use MapsId to indicate this relationship shares the primary key
     @JoinColumn(name="person_id")
     @JsonIgnore
     private Person person;
