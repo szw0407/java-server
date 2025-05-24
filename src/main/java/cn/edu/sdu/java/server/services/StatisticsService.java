@@ -1,86 +1,123 @@
 package cn.edu.sdu.java.server.services;
 
 import cn.edu.sdu.java.server.models.StatisticsDay;
-import cn.edu.sdu.java.server.payload.request.DataRequest;
-import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.StatisticsDayRepository;
-import cn.edu.sdu.java.server.repositorys.UserRepository;
-import cn.edu.sdu.java.server.util.CommonMethod;
-import cn.edu.sdu.java.server.util.DateTimeTool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import java.util.*;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class StatisticsService {
-    private final UserRepository userRepository;
+
+    private final JdbcTemplate jdbcTemplate;
     private final StatisticsDayRepository statisticsDayRepository;
-    public StatisticsService(UserRepository userRepository, StatisticsDayRepository statisticsDayRepository) {
-        this.userRepository = userRepository;
+
+    @Autowired
+    public StatisticsService(JdbcTemplate jdbcTemplate, StatisticsDayRepository statisticsDayRepository) {
+        this.jdbcTemplate = jdbcTemplate;
         this.statisticsDayRepository = statisticsDayRepository;
     }
 
-    public DataResponse getMainPageData(DataRequest dataRequest) {
-        Date day = new Date();
-        Date monthDay = DateTimeTool.prevMonth(day);
-        int i;
-        Integer id;
-        Object[] a;
-        Long l;
-        String name;
-        long total = userRepository.count();
-        Integer monthCount = userRepository.countLastLoginTime(DateTimeTool.parseDateTime(monthDay,"yyyy-MM-dd")+" 00:00:00");
-        Integer dayCount = userRepository.countLastLoginTime(DateTimeTool.parseDateTime(day,"yyyy-MM-dd")+" 00:00:00");
-        Map<String,Object> data = new HashMap<>();
-        Map<String,Object> m = new HashMap<>();
-        m.put("total", (int) total);
-        m.put("monthCount",monthCount);
-        m.put("dayCount",dayCount);
-        data.put("onlineUser", m);
-        List<?> nList = userRepository.getCountList();
-        List<Map<String,Object>> userTypeList = new ArrayList<>();
-        for(i= 0;i < nList.size();i++) {
-            m = new HashMap<>();
-            a = (Object[])nList.get(i);
-            id = (Integer)a[0];
-            l = (Long)a[1];
-            if(id == 1)
-                name = "管理员";
-            else if(id == 2)
-                name = "学生";
-            else if(id == 3)
-                name = "教师";
-            else
-                name = "";
-            m.put("name", name);
-            m.put("value",l.intValue());
-            userTypeList.add(m);
-        }
-        data.put("userTypeList", userTypeList);
-        List<StatisticsDay>sList = statisticsDayRepository.findListByDay(DateTimeTool.parseDateTime(monthDay,"yyyyMMdd"),DateTimeTool.parseDateTime(day,"yyyyMMdd"));
-        List<String> dayList = new ArrayList<>();
-        List<String> lList = new ArrayList<>();
-        List<String> rList = new ArrayList<>();
-        List<String> cList = new ArrayList<>();
-        List<String> mList = new ArrayList<>();
-        for(StatisticsDay s:sList) {
-            dayList.add(s.getDay());
-            lList.add(""+s.getLoginCount());
-            rList.add(""+s.getRequestCount());
-            cList.add(""+s.getCreateCount());
-            mList.add(""+s.getLoginCount());
-        }
-        m = new HashMap<>();
-        m.put("value",dayList);
-        m.put("label1",lList);
-        m.put("label2",rList);
-        data.put("requestData", m);
-        m = new HashMap<>();
-        m.put("value",dayList);
-        m.put("label1",cList);
-        m.put("label2",mList);
-        data.put("operateData", m);
-
-        return CommonMethod.getReturnData(data);
+    /** 1. 日统计 */
+    public List<cn.edu.sdu.java.server.payload.response.StatisticsDay> getDailyStatistics() {
+        String sql = """
+            SELECT day,
+                   request_count,
+                   create_count,
+                   login_count
+              FROM statistics_day
+             ORDER BY day
+            """;
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            cn.edu.sdu.java.server.payload.response.StatisticsDay sd = new cn.edu.sdu.java.server.payload.response.StatisticsDay();
+            sd.setDay(rs.getString("day"));
+            sd.setRequestCount(rs.getLong("request_count"));
+            sd.setCreateCount(rs.getLong("create_count"));
+            sd.setLoginCount(rs.getLong("login_count"));
+            return sd;
+        });
     }
 
+    /** 2. 每生每学期学分明细 */
+    public List<Map<String, Object>> getCreditsPerSemester() {
+        String sql = """
+            SELECT sc.person_id                                AS studentId,
+                   p.name                                      AS studentName,
+                   CONCAT(cs.year,' ',cs.semester)             AS semester,
+                   SUM(co.credit)                              AS totalCredits
+              FROM score sc
+              JOIN class_schedule cs ON sc.class_schedule_id = cs.class_schedule_id
+              JOIN course co         ON cs.course_id         = co.course_id
+              JOIN student st        ON sc.person_id         = st.person_id
+              JOIN person p          ON st.person_id         = p.person_id
+             GROUP BY sc.person_id, p.name, cs.year, cs.semester
+            """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    /** 3. 各学期平均学分 */
+    public List<Map<String, Object>> getAverageCreditsPerSemester() {
+        String sql = """
+            SELECT t.semester,
+                   ROUND(AVG(t.totalCredits),2) AS averageCredits
+              FROM (
+                    SELECT sc.person_id,
+                           CONCAT(cs.year,' ',cs.semester) AS semester,
+                           SUM(co.credit)                  AS totalCredits
+                      FROM score sc
+                      JOIN class_schedule cs ON sc.class_schedule_id = cs.class_schedule_id
+                      JOIN course co         ON cs.course_id         = co.course_id
+                     GROUP BY sc.person_id, cs.year, cs.semester
+                   ) t
+             GROUP BY t.semester
+            """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    /** 4. 学分区间分布 */
+    public List<Map<String, Object>> getCreditDistribution() {
+        String sql = """
+            SELECT credit_range AS `range`,
+                   COUNT(*)      AS `count`
+              FROM (
+                    SELECT CASE
+                             WHEN totalCredits BETWEEN 0  AND 5  THEN '0-5学分'
+                             WHEN totalCredits BETWEEN 6  AND 10 THEN '6-10学分'
+                             WHEN totalCredits BETWEEN 11 AND 15 THEN '11-15学分'
+                             ELSE                             '16+学分'
+                           END AS credit_range
+                      FROM (
+                            SELECT sc.person_id,
+                                   CONCAT(cs.year,' ',cs.semester) AS semester,
+                                   SUM(co.credit)               AS totalCredits
+                              FROM score sc
+                              JOIN class_schedule cs ON sc.class_schedule_id = cs.class_schedule_id
+                              JOIN course co         ON cs.course_id         = co.course_id
+                             GROUP BY sc.person_id, cs.year, cs.semester
+                           ) sub1
+                   ) sub2
+             GROUP BY credit_range
+            """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    /** 5. 学生性别分布统计 */
+    public List<Map<String, Object>> getGenderDistribution() {
+        String sql = """
+            SELECT 
+                CASE 
+                    WHEN p.gender = 1 THEN '男'
+                    WHEN p.gender = 2 THEN '女'
+                    ELSE '未知'
+                END AS gender,
+                COUNT(*) AS count
+            FROM student s
+            JOIN person p ON s.person_id = p.person_id
+            GROUP BY p.gender
+        """;
+        return jdbcTemplate.queryForList(sql);
+    }
 }
