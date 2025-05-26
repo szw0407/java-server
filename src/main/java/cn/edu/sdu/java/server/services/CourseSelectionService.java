@@ -114,7 +114,7 @@ public class CourseSelectionService {
         List<Score> selectedScores = scoreRepository.findStudentSemesterCourses(personId, semester, year);
         Set<Integer> selectedCourseIds = new HashSet<>();
         Set<Integer> selectedClassIds = new HashSet<>();
-        
+        List<Score> selectedScoreHistory = scoreRepository.findByStudentPersonId(personId);
         for (Score score : selectedScores) {
             selectedCourseIds.add(score.getClassSchedule().getCourse().getCourseId());
             selectedClassIds.add(score.getClassSchedule().getClassScheduleId());
@@ -125,6 +125,16 @@ public class CourseSelectionService {
         for (ClassSchedule classSchedule : allClasses) {
             // 如果该课程的班级尚未被学生选择，则添加到可选列表
             if (!selectedClassIds.contains(classSchedule.getClassScheduleId())) {
+                // 如果precourse没有被选择，禁止选课
+                Course course = classSchedule.getCourse();
+                if (course.getPreCourse() != null) {
+                    Optional<Score> preCourseScore = selectedScoreHistory.stream()
+                            .filter(s -> s.getClassSchedule().getCourse().getCourseId().equals(course.getPreCourse().getCourseId()))
+                            .findFirst();
+                    if (preCourseScore.isEmpty()) {
+                        continue; // 如果前置课程未被选，则跳过
+                    }
+                }
                 Map<String, Object> m = new HashMap<>();
                 m.put("classScheduleId", classSchedule.getClassScheduleId());
                 m.put("courseId", classSchedule.getCourse().getCourseId());
@@ -287,5 +297,42 @@ public class CourseSelectionService {
         } else {
             return CommonMethod.getReturnData(dataList);
         }
+    }
+
+    public DataResponse getAvailableCoursesAll(@Valid DataRequest dataRequest) {
+        var semester = dataRequest.getString("semester");
+        var year = dataRequest.getString("year");
+        if (semester == null || year == null) {
+            return CommonMethod.getReturnMessageError("学期和年份不能为空");
+        }
+
+        // 获取当前学期所有课程班级
+        List<ClassSchedule> allClasses = classScheduleRepository.findCurrentSemesterClasses(semester, year);
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (ClassSchedule classSchedule : allClasses) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("classScheduleId", classSchedule.getClassScheduleId());
+            m.put("courseId", classSchedule.getCourse().getCourseId());
+            m.put("courseName", classSchedule.getCourse().getName());
+            m.put("courseNum", classSchedule.getCourse().getNum());
+            m.put("credit", classSchedule.getCourse().getCredit());
+            m.put("classNumber", classSchedule.getClassNumber());
+            m.put("semester", classSchedule.getSemester());
+            m.put("year", classSchedule.getYear());
+            m.put("classTime", classSchedule.getClassTime());
+            m.put("classLocation", classSchedule.getClassLocation());
+
+            // 显示这个课程的有关老师
+            List<String> teachers = new ArrayList<>();
+            for (var teacher : classSchedule.getTeachers()) {
+                teachers.add(teacher.getPerson().getName());
+            }
+            m.put("teachers", teachers);
+
+            dataList.add(m);
+        }
+
+        return CommonMethod.getReturnData(dataList);
     }
 }

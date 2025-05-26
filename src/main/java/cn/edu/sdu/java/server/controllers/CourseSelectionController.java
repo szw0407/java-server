@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api/courseselection")
+@RequestMapping("/api/courseSelection")
 public class CourseSelectionController {
 
     private final CourseSelectionService courseSelectionService;
@@ -24,6 +24,11 @@ public class CourseSelectionController {
     @PreAuthorize("hasRole('ADMIN')")
     public DataResponse getSelectedCoursesAll(@Valid @RequestBody DataRequest dataRequest) {
         return courseSelectionService.getSelectedCoursesAll(dataRequest);
+    }
+    @PostMapping("/getAvailableCoursesAll")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse getAvailableCoursesAll(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.getAvailableCoursesAll(dataRequest);
     }
     /**
      * 获取学生的已选课程列表
@@ -37,7 +42,7 @@ public class CourseSelectionController {
     /**
      * 获取学生可选的课程列表
      */
-    @PostMapping("/getAvailableCourses")
+    @PostMapping("/getStudentAvailableCourses")
     @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
     public DataResponse getAvailableCourses(@Valid @RequestBody DataRequest dataRequest) {
         return courseSelectionService.getAvailableCourses(dataRequest);
