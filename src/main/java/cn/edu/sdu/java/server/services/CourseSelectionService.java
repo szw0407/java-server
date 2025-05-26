@@ -10,6 +10,7 @@ import cn.edu.sdu.java.server.repositorys.ClassScheduleRepository;
 import cn.edu.sdu.java.server.repositorys.ScoreRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,9 @@ public class CourseSelectionService {
      * 获取学生的已选课程列表
      */
     public DataResponse getSelectedCourses(DataRequest dataRequest) {
-//        Integer personId = dataRequest.getInteger("personId");
+        Integer personId = dataRequest.getInteger("personId");
         String semester = dataRequest.getString("semester");
-        Integer personId = getPersonId();
+
         String year = dataRequest.getString("year");
         
         if (personId == null) {
@@ -251,5 +252,40 @@ public class CourseSelectionService {
         scoreRepository.deleteById(scoreId);
         
         return CommonMethod.getReturnMessageOK("退课成功");
+    }
+
+    public DataResponse getSelectedCoursesAll(@Valid DataRequest dataRequest) {
+        var semester = dataRequest.getString("semester");
+        var year = dataRequest.getString("year");
+        if (semester == null || year == null) {
+            return CommonMethod.getReturnMessageError("学期和年份不能为空");
+        }
+        var data = scoreRepository.findBySemesterAndYear(semester, year);
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (var o : data) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("scoreId", o.getScoreId());
+            m.put("studentId", o.getStudent().getPersonId());
+            m.put("studentName", o.getStudent().getPerson().getName());
+            m.put("classScheduleId", o.getClassSchedule().getClassScheduleId());
+            m.put("courseId", o.getClassSchedule().getCourse().getCourseId());
+            m.put("courseName", o.getClassSchedule().getCourse().getName());
+            m.put("courseNum", o.getClassSchedule().getCourse().getNum());
+            m.put("credit", o.getClassSchedule().getCourse().getCredit());
+            m.put("classNumber", o.getClassSchedule().getClassNumber());
+            m.put("semester", o.getClassSchedule().getSemester());
+            m.put("year", o.getClassSchedule().getYear());
+            m.put("classTime", o.getClassSchedule().getClassTime());
+            m.put("classLocation", o.getClassSchedule().getClassLocation());
+            m.put("mark", o.getMark());
+            m.put("ranking", o.getRanking());
+            dataList.add(m);
+        }
+
+        if (dataList.isEmpty()) {
+            return CommonMethod.getReturnMessageError("没有选课记录");
+        } else {
+            return CommonMethod.getReturnData(dataList);
+        }
     }
 }

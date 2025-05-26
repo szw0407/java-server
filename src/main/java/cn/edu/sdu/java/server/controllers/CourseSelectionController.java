@@ -20,11 +20,15 @@ public class CourseSelectionController {
     public CourseSelectionController(CourseSelectionService courseSelectionService) {
         this.courseSelectionService = courseSelectionService;
     }
-
+    @PostMapping("/getSelectedCoursesAll")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse getSelectedCoursesAll(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.getSelectedCoursesAll(dataRequest);
+    }
     /**
      * 获取学生的已选课程列表
      */
-    @PostMapping("/getSelectedCourses")
+    @PostMapping("/getStudentSelectedCourses")
     @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
     public DataResponse getSelectedCourses(@Valid @RequestBody DataRequest dataRequest) {
         return courseSelectionService.getSelectedCourses(dataRequest);
