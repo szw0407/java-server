@@ -206,13 +206,13 @@ public class TeachPlanService {
         var teacherIds = dataRequest.getList("teacherIds");
         
         Optional<Course> courseOp = courseRepository.findById(courseId);
-        if (!courseOp.isPresent()) {
+        if (courseOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("课程不存在");
         }
         
         // 检查该班号在该学期是否已存在
-        Optional<ClassSchedule> existingClass = classScheduleRepository.findByClassNumberAndSemesterAndYear(
-                classNumber, semester, year);
+        Optional<ClassSchedule> existingClass = classScheduleRepository.findByClassNumberAndSemesterAndYearAndCourse_CourseId(
+                classNumber, semester, year, courseId);
                 
         if (existingClass.isPresent()) {
             return CommonMethod.getReturnMessageError("该班号在本学期已存在");
@@ -226,7 +226,7 @@ public class TeachPlanService {
         classSchedule.setYear(year);
         classSchedule.setClassTime(classTime);
         classSchedule.setClassLocation(classLocation);
-        classSchedule.setTeachers(new ArrayList<>());
+        classScheduleRepository.save(classSchedule);
         // clear all teachers
         teachPlanRepository.deleteAll(teachPlanRepository.findTeachPlansByClassSchedule(classSchedule));
 
@@ -234,9 +234,7 @@ public class TeachPlanService {
             // add this teacherid (it should be integer)
             Integer _id = (Integer) teacherid;
             Optional<Teacher> teacherOp = teacherRepository.findById(_id);
-            if (teacherOp.isPresent()) {
-                classSchedule.getTeachers().add(teacherOp.get());
-            } else {
+            if (teacherOp.isEmpty()) {
                 return CommonMethod.getReturnMessageError("教师ID " + _id + " 不存在");
             }
 
@@ -247,7 +245,7 @@ public class TeachPlanService {
             teachPlanRepository.save(teachplan);
 
         }
-        classScheduleRepository.save(classSchedule);
+
         systemService.modifyLog(classSchedule, true);
 
         return CommonMethod.getReturnData(classSchedule.getClassScheduleId());

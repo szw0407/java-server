@@ -42,7 +42,8 @@ public class Course  {
     private Course preCourse;
     @Size(max = 12)
     private String coursePath;
-    
+    private String courseType; // 课程类型（必修、选择性必修、选修等）
+    private String department; // 所属院系
     // 课程描述
     @Size(max = 500)
     private String description;
