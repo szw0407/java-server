@@ -10,6 +10,7 @@ import cn.edu.sdu.java.server.repositorys.ClassScheduleRepository;
 import cn.edu.sdu.java.server.repositorys.ScoreRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -44,9 +45,9 @@ public class CourseSelectionService {
      * 获取学生的已选课程列表
      */
     public DataResponse getSelectedCourses(DataRequest dataRequest) {
-//        Integer personId = dataRequest.getInteger("personId");
+        Integer personId = dataRequest.getInteger("personId");
         String semester = dataRequest.getString("semester");
-        Integer personId = getPersonId();
+
         String year = dataRequest.getString("year");
         
         if (personId == null) {
@@ -113,7 +114,7 @@ public class CourseSelectionService {
         List<Score> selectedScores = scoreRepository.findStudentSemesterCourses(personId, semester, year);
         Set<Integer> selectedCourseIds = new HashSet<>();
         Set<Integer> selectedClassIds = new HashSet<>();
-        
+        List<Score> selectedScoreHistory = scoreRepository.findByStudentPersonId(personId);
         for (Score score : selectedScores) {
             selectedCourseIds.add(score.getClassSchedule().getCourse().getCourseId());
             selectedClassIds.add(score.getClassSchedule().getClassScheduleId());
@@ -124,6 +125,16 @@ public class CourseSelectionService {
         for (ClassSchedule classSchedule : allClasses) {
             // 如果该课程的班级尚未被学生选择，则添加到可选列表
             if (!selectedClassIds.contains(classSchedule.getClassScheduleId())) {
+                // 如果precourse没有被选择，禁止选课
+                Course course = classSchedule.getCourse();
+                if (course.getPreCourse() != null) {
+                    Optional<Score> preCourseScore = selectedScoreHistory.stream()
+                            .filter(s -> s.getClassSchedule().getCourse().getCourseId().equals(course.getPreCourse().getCourseId()))
+                            .findFirst();
+                    if (preCourseScore.isEmpty()) {
+                        continue; // 如果前置课程未被选，则跳过
+                    }
+                }
                 Map<String, Object> m = new HashMap<>();
                 m.put("classScheduleId", classSchedule.getClassScheduleId());
                 m.put("courseId", classSchedule.getCourse().getCourseId());
@@ -251,5 +262,77 @@ public class CourseSelectionService {
         scoreRepository.deleteById(scoreId);
         
         return CommonMethod.getReturnMessageOK("退课成功");
+    }
+
+    public DataResponse getSelectedCoursesAll(@Valid DataRequest dataRequest) {
+        var semester = dataRequest.getString("semester");
+        var year = dataRequest.getString("year");
+        if (semester == null || year == null) {
+            return CommonMethod.getReturnMessageError("学期和年份不能为空");
+        }
+        var data = scoreRepository.findBySemesterAndYear(semester, year);
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (var o : data) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("scoreId", o.getScoreId());
+            m.put("studentId", o.getStudent().getPersonId());
+            m.put("studentName", o.getStudent().getPerson().getName());
+            m.put("classScheduleId", o.getClassSchedule().getClassScheduleId());
+            m.put("courseId", o.getClassSchedule().getCourse().getCourseId());
+            m.put("courseName", o.getClassSchedule().getCourse().getName());
+            m.put("courseNum", o.getClassSchedule().getCourse().getNum());
+            m.put("credit", o.getClassSchedule().getCourse().getCredit());
+            m.put("classNumber", o.getClassSchedule().getClassNumber());
+            m.put("semester", o.getClassSchedule().getSemester());
+            m.put("year", o.getClassSchedule().getYear());
+            m.put("classTime", o.getClassSchedule().getClassTime());
+            m.put("classLocation", o.getClassSchedule().getClassLocation());
+            m.put("mark", o.getMark());
+            m.put("ranking", o.getRanking());
+            dataList.add(m);
+        }
+
+        if (dataList.isEmpty()) {
+            return CommonMethod.getReturnMessageError("没有选课记录");
+        } else {
+            return CommonMethod.getReturnData(dataList);
+        }
+    }
+
+    public DataResponse getAvailableCoursesAll(@Valid DataRequest dataRequest) {
+        var semester = dataRequest.getString("semester");
+        var year = dataRequest.getString("year");
+        if (semester == null || year == null) {
+            return CommonMethod.getReturnMessageError("学期和年份不能为空");
+        }
+
+        // 获取当前学期所有课程班级
+        List<ClassSchedule> allClasses = classScheduleRepository.findCurrentSemesterClasses(semester, year);
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (ClassSchedule classSchedule : allClasses) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("classScheduleId", classSchedule.getClassScheduleId());
+            m.put("courseId", classSchedule.getCourse().getCourseId());
+            m.put("courseName", classSchedule.getCourse().getName());
+            m.put("courseNum", classSchedule.getCourse().getNum());
+            m.put("credit", classSchedule.getCourse().getCredit());
+            m.put("classNumber", classSchedule.getClassNumber());
+            m.put("semester", classSchedule.getSemester());
+            m.put("year", classSchedule.getYear());
+            m.put("classTime", classSchedule.getClassTime());
+            m.put("classLocation", classSchedule.getClassLocation());
+
+            // 显示这个课程的有关老师
+            List<String> teachers = new ArrayList<>();
+            for (var teacher : classSchedule.getTeachers()) {
+                teachers.add(teacher.getPerson().getName());
+            }
+            m.put("teachers", teachers);
+
+            dataList.add(m);
+        }
+
+        return CommonMethod.getReturnData(dataList);
     }
 }

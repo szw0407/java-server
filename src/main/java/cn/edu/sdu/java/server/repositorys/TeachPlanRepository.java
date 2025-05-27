@@ -1,10 +1,12 @@
 package cn.edu.sdu.java.server.repositorys;
 
+import cn.edu.sdu.java.server.models.ClassSchedule;
 import cn.edu.sdu.java.server.models.TeachPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface TeachPlanRepository extends JpaRepository<TeachPlan, Integer> {
@@ -29,4 +31,6 @@ public interface TeachPlanRepository extends JpaRepository<TeachPlan, Integer> {
      * 查询特定教学班级是否已分配给特定教师
      */
     Optional<TeachPlan> findByTeacherPersonIdAndClassScheduleClassScheduleId(Integer teacherId, Integer classScheduleId);
+
+    List<TeachPlan> findTeachPlansByClassSchedule(ClassSchedule classSchedule);
 }

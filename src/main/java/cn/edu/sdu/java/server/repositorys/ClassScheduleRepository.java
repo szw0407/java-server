@@ -31,5 +31,5 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, In
     /**
      * 根据班号查找教学班级
      */
-    Optional<ClassSchedule> findByClassNumberAndSemesterAndYear(Integer classNumber, String semester, String year);
+    Optional<ClassSchedule> findByClassNumberAndSemesterAndYearAndCourse_CourseId(Integer classNumber, String semester, String year, Integer courseId);
 }

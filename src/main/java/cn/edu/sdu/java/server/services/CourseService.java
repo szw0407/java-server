@@ -40,6 +40,8 @@ public class CourseService {
             m.put("name", c.getName());
             m.put("credit", c.getCredit() + "");
             m.put("coursePath", c.getCoursePath());
+            m.put("courseType", c.getCourseType() != null ? c.getCourseType() : "");
+            m.put("department", c.getDepartment() != null ? c.getDepartment() : "");
             pc = c.getPreCourse();
             if (pc != null) {
                 m.put("preCourse", pc.getName());
@@ -60,6 +62,8 @@ public class CourseService {
         String coursePath = dataRequest.getString("coursePath");
         Integer credit = dataRequest.getInteger("credit");
         Integer preCourseId = dataRequest.getInteger("preCourseId");
+        String courseType = dataRequest.getString("courseType");
+        String department = dataRequest.getString("department");
         Optional<Course> op;
         Course c = null;
 
@@ -81,6 +85,8 @@ public class CourseService {
         c.setCredit(credit);
         c.setCoursePath(coursePath);
         c.setPreCourse(pc);
+        c.setCourseType(courseType);
+        c.setDepartment(department);
         courseRepository.save(c);
         return CommonMethod.getReturnMessageOK();
     }
