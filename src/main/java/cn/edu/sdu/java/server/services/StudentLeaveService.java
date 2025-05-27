@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -35,9 +37,43 @@ public class StudentLeaveService {
         List<StudentLeave> leaveList = studentLeaveRepository.findLeaveListByStudentName(studentName);
         List<Map<String, Object>> dataList = new ArrayList<>();
         for (StudentLeave leave : leaveList) {
-            dataList.add(getMapFromStudentLeave(leave));
+            dataList.add(getMapFromStudentLeaveWithLocalTime(leave));
         }
         return CommonMethod.getReturnData(dataList);
+    }
+
+    private String getApprovalStatus(Boolean isApproved) {
+        if (isApproved == null) {
+            return "待审批";
+        }
+        return isApproved ? "同意" : "拒绝";
+    }
+
+
+    // 将 StudentLeave 转换为 Map，并格式化时间为本地时间
+    private Map<String, Object> getMapFromStudentLeaveWithLocalTime(StudentLeave leave) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", leave.getId());
+        map.put("studentId", leave.getStudent().getPersonId());
+        map.put("studentName", leave.getStudent().getPerson().getName());
+        map.put("college", leave.getCollege());
+        map.put("startDate", formatToLocalTime(leave.getStartDate()));
+        map.put("endDate", formatToLocalTime(leave.getEndDate()));
+        map.put("reason", leave.getReason());
+        map.put("approverId", leave.getApproverId());
+        map.put("isApproved", getApprovalStatus(leave.getIsApproved()));
+        return map;
+    }
+
+    // 格式化时间为本地时间字符串
+    private String formatToLocalTime(Date date) {
+        if (date == null) {
+            return null;
+        }
+        return date.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 
     // 获取单条请假记录详情
@@ -51,54 +87,61 @@ public class StudentLeaveService {
     }
 
     // 保存或更新请假记录
-    public DataResponse saveLeave(DataRequest dataRequest) {
-        Map<String, Object> form = dataRequest.getMap("form");
-        Integer leaveId = CommonMethod.getInteger(form, "leaveId");
-        Integer studentId = CommonMethod.getInteger(form, "studentId");
-        String studentName = CommonMethod.getString(form, "studentName");
+// 保存或更新请假记录
+public DataResponse saveLeave(DataRequest dataRequest) {
+    Map<String, Object> form = dataRequest.getMap("form");
+    Integer leaveId = CommonMethod.getInteger(form, "leaveId");
+    Integer studentId = CommonMethod.getInteger(form, "studentId");
+    String studentName = CommonMethod.getString(form, "studentName");
 
-        // 验证学生是否存在
-        Optional<Student> studentOptional = studentRepository.findById(studentId);
-        if (studentOptional.isEmpty()) {
-            return CommonMethod.getReturnMessageError("学生不存在，无法添加请假记录");
-        }
-        Student student = studentOptional.get();
-        String actualStudentName = student.getPerson().getName();
-        if (!actualStudentName.equals(studentName)) {
-            return CommonMethod.getReturnMessageError("学生ID和姓名不匹配，无法添加请假记录");
-        }
-
-
-        // 验证 studentId 和 college 是否匹配
-        String actualCollege = student.getPerson().getDept();
-        String formCollege = CommonMethod.getString(form, "college");
-        if (!actualCollege.equals(formCollege)) {
-            return CommonMethod.getReturnMessageError("学生ID和学院不匹配，无法添加请假记录");
-        }
-
-        StudentLeave leave = null;
-        if (leaveId != null) {
-            Optional<StudentLeave> leaveOptional = studentLeaveRepository.findById(leaveId);
-            if (leaveOptional.isPresent()) {
-                leave = leaveOptional.get();
-            }
-        }
-        if (leave == null) {
-            leave = new StudentLeave();
-        }
-
-        leave.setStudent(studentOptional.get());
-        leave.setStudentName(studentName); // 记录 studentName
-        leave.setCollege(CommonMethod.getString(form, "college"));
-        leave.setStartDate(CommonMethod.getDate(form, "startDate"));
-        leave.setEndDate(CommonMethod.getDate(form, "endDate"));
-        leave.setReason(CommonMethod.getString(form, "reason"));
-        leave.setApproverId(CommonMethod.getInteger(form, "approverId"));
-        //leave.setIsApproved(CommonMethod.getBoolean(form, "isApproved"));
-
-        studentLeaveRepository.save(leave);
-        return CommonMethod.getReturnMessageOK();
+    // 验证学生是否存在
+    Optional<Student> studentOptional = studentRepository.findById(studentId);
+    if (studentOptional.isEmpty()) {
+        return CommonMethod.getReturnMessageError("学生不存在，无法添加请假记录");
     }
+    Student student = studentOptional.get();
+    String actualStudentName = student.getPerson().getName();
+    if (!actualStudentName.equals(studentName)) {
+        return CommonMethod.getReturnMessageError("学生ID和姓名不匹配，无法添加请假记录");
+    }
+
+    // 验证 studentId 和 college 是否匹配
+    String actualCollege = student.getPerson().getDept();
+    String formCollege = CommonMethod.getString(form, "college");
+    if (!actualCollege.equals(formCollege)) {
+        return CommonMethod.getReturnMessageError("学生ID和学院不匹配，无法添加请假记录");
+    }
+
+    // 获取并校验日期
+    Date startDate = CommonMethod.getDate(form, "startDate");
+    Date endDate = CommonMethod.getDate(form, "endDate");
+    if (startDate != null && endDate != null && startDate.after(endDate)) {
+        return CommonMethod.getReturnMessageError("开始日期不能晚于结束日期");
+    }
+
+    StudentLeave leave = null;
+    if (leaveId != null) {
+        Optional<StudentLeave> leaveOptional = studentLeaveRepository.findById(leaveId);
+        if (leaveOptional.isPresent()) {
+            leave = leaveOptional.get();
+        }
+    }
+    if (leave == null) {
+        leave = new StudentLeave();
+    }
+
+    leave.setStudent(studentOptional.get());
+    leave.setStudentName(studentName); // 记录 studentName
+    leave.setCollege(CommonMethod.getString(form, "college"));
+    leave.setStartDate(startDate);
+    leave.setEndDate(endDate);
+    leave.setReason(CommonMethod.getString(form, "reason"));
+    leave.setApproverId(CommonMethod.getInteger(form, "approverId"));
+    //leave.setIsApproved(CommonMethod.getBoolean(form, "isApproved"));
+
+    studentLeaveRepository.save(leave);
+    return CommonMethod.getReturnMessageOK();
+}
 
     // 删除请假记录
     public DataResponse deleteLeave(DataRequest dataRequest) {
@@ -198,5 +241,6 @@ public class StudentLeaveService {
 
         return CommonMethod.getReturnMessageOK("审批成功");
     }
+
 }
 
