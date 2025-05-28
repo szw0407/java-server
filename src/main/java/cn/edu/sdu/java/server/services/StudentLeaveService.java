@@ -19,16 +19,19 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import cn.edu.sdu.java.server.models.Teacher;
+import cn.edu.sdu.java.server.repositorys.TeacherRepository;
 
 @Service
 public class StudentLeaveService {
 
     private final StudentLeaveRepository studentLeaveRepository;
     private final StudentRepository studentRepository;
-
-    public StudentLeaveService(StudentLeaveRepository studentLeaveRepository, StudentRepository studentRepository) {
+    private final TeacherRepository teacherRepository; // 添加 TeacherRepo
+    public StudentLeaveService(StudentLeaveRepository studentLeaveRepository, StudentRepository studentRepository,TeacherRepository teacherRepository) {
         this.studentLeaveRepository = studentLeaveRepository;
         this.studentRepository = studentRepository;
+        this.teacherRepository = teacherRepository; // 初始化 TeacherRepo
     }
 
     // 获取请假记录列表
@@ -88,11 +91,13 @@ public class StudentLeaveService {
 
     // 保存或更新请假记录
 // 保存或更新请假记录
+// 保存或更新请假记录
 public DataResponse saveLeave(DataRequest dataRequest) {
     Map<String, Object> form = dataRequest.getMap("form");
     Integer leaveId = CommonMethod.getInteger(form, "leaveId");
     Integer studentId = CommonMethod.getInteger(form, "studentId");
     String studentName = CommonMethod.getString(form, "studentName");
+    Integer approverId = CommonMethod.getInteger(form, "approverId");
 
     // 验证学生是否存在
     Optional<Student> studentOptional = studentRepository.findById(studentId);
@@ -110,6 +115,14 @@ public DataResponse saveLeave(DataRequest dataRequest) {
     String formCollege = CommonMethod.getString(form, "college");
     if (!actualCollege.equals(formCollege)) {
         return CommonMethod.getReturnMessageError("学生ID和学院不匹配，无法添加请假记录");
+    }
+
+    // 验证 approverId 是否为老师
+    if (approverId != null) {
+        Optional<Teacher> teacherOptional = teacherRepository.findById(approverId);
+        if (teacherOptional.isEmpty()) {
+            return CommonMethod.getReturnMessageError("审批人ID无效，必须是老师的ID");
+        }
     }
 
     // 获取并校验日期
@@ -136,13 +149,11 @@ public DataResponse saveLeave(DataRequest dataRequest) {
     leave.setStartDate(startDate);
     leave.setEndDate(endDate);
     leave.setReason(CommonMethod.getString(form, "reason"));
-    leave.setApproverId(CommonMethod.getInteger(form, "approverId"));
-    //leave.setIsApproved(CommonMethod.getBoolean(form, "isApproved"));
+    leave.setApproverId(approverId);
 
     studentLeaveRepository.save(leave);
     return CommonMethod.getReturnMessageOK();
 }
-
     // 删除请假记录
     public DataResponse deleteLeave(DataRequest dataRequest) {
         Integer leaveId = dataRequest.getInteger("leaveId");
