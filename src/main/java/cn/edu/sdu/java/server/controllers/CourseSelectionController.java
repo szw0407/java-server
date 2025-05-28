@@ -48,11 +48,23 @@ public class CourseSelectionController {
         return courseSelectionService.getAvailableCourses(dataRequest);
     }
 
+    @PostMapping("/selectCourseForStudent")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse selectCourseForStudent(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.selectCourseForStudent(dataRequest);
+    }
+
+    @PostMapping("/dropCourseForStudent")
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataResponse dropCourseForStudent(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.dropCourseForStudent(dataRequest);
+    }
+
     /**
      * 选课
      */
     @PostMapping("/selectCourse")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize("hasRole('STUDENT')")
     public DataResponse selectCourse(@Valid @RequestBody DataRequest dataRequest) {
         return courseSelectionService.selectCourse(dataRequest);
     }
@@ -61,8 +73,10 @@ public class CourseSelectionController {
      * 退课
      */
     @PostMapping("/dropCourse")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    @PreAuthorize(" hasRole('STUDENT')")
     public DataResponse dropCourse(@Valid @RequestBody DataRequest dataRequest) {
         return courseSelectionService.dropCourse(dataRequest);
     }
+
+
 }

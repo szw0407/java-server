@@ -7,6 +7,7 @@ import cn.edu.sdu.java.server.models.Student;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.ClassScheduleRepository;
+import cn.edu.sdu.java.server.repositorys.CourseRepository;
 import cn.edu.sdu.java.server.repositorys.ScoreRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
@@ -30,15 +31,18 @@ public class CourseSelectionService {
     private final ClassScheduleRepository classScheduleRepository;
     private final ScoreRepository scoreRepository;
     private final SystemService systemService;
-
+    private final CourseRepository courseRepository;
     public CourseSelectionService(StudentRepository studentRepository,
                                  ClassScheduleRepository classScheduleRepository,
                                  ScoreRepository scoreRepository,
-                                 SystemService systemService) {
+                                 SystemService systemService,
+                                  CourseRepository courseRepository
+    ) {
         this.studentRepository = studentRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.scoreRepository = scoreRepository;
         this.systemService = systemService;
+        this.courseRepository = courseRepository;
     }
 
     /**
@@ -276,19 +280,22 @@ public class CourseSelectionService {
             Map<String, Object> m = new HashMap<>();
             m.put("scoreId", o.getScoreId());
             m.put("studentId", o.getStudent().getPersonId());
+            m.put("studentNum", o.getStudent().getPerson().getNum());
             m.put("studentName", o.getStudent().getPerson().getName());
             m.put("classScheduleId", o.getClassSchedule().getClassScheduleId());
             m.put("courseId", o.getClassSchedule().getCourse().getCourseId());
             m.put("courseName", o.getClassSchedule().getCourse().getName());
             m.put("courseNum", o.getClassSchedule().getCourse().getNum());
             m.put("credit", o.getClassSchedule().getCourse().getCredit());
-            m.put("classNumber", o.getClassSchedule().getClassNumber());
+            m.put("classNumber", o.getClassSchedule().getClassNumber().toString());
             m.put("semester", o.getClassSchedule().getSemester());
             m.put("year", o.getClassSchedule().getYear());
             m.put("classTime", o.getClassSchedule().getClassTime());
             m.put("classLocation", o.getClassSchedule().getClassLocation());
             m.put("mark", o.getMark());
             m.put("ranking", o.getRanking());
+            m.put("teachers", o.getClassSchedule().getTeachers().stream()
+                    .map(t -> t.getPerson().getName()).toList());
             dataList.add(m);
         }
 
@@ -317,7 +324,7 @@ public class CourseSelectionService {
             m.put("courseName", classSchedule.getCourse().getName());
             m.put("courseNum", classSchedule.getCourse().getNum());
             m.put("credit", classSchedule.getCourse().getCredit());
-            m.put("classNumber", classSchedule.getClassNumber());
+            m.put("classNumber", classSchedule.getClassNumber().toString());
             m.put("semester", classSchedule.getSemester());
             m.put("year", classSchedule.getYear());
             m.put("classTime", classSchedule.getClassTime());
@@ -334,5 +341,78 @@ public class CourseSelectionService {
         }
 
         return CommonMethod.getReturnData(dataList);
+    }
+
+    public DataResponse selectCourseForStudent(@Valid DataRequest dataRequest) {
+        String studentNum = dataRequest.getString("studentNum");
+//        Integer classScheduleId = dataRequest.getInteger("classScheduleId");
+        String courseNum = dataRequest.getString("courseNum");
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+        Integer teachClassNum = dataRequest.getInteger("classNum");
+        if (studentNum == null || courseNum == null || year == null || semester == null || teachClassNum == null) {
+            return CommonMethod.getReturnMessageError("学生ID和教学班级ID不能为空");
+        }
+        Optional<Course> courseOp = courseRepository.findByNum(courseNum);
+        if (courseOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("这个课程不存在");
+        }
+        // 查找这个课程对应的班级号码有没有匹配的
+        Optional<ClassSchedule> classOp = classScheduleRepository.findByClassNumberAndSemesterAndYearAndCourse_CourseId(
+                teachClassNum, semester, year, courseOp.get().getCourseId());
+        if (classOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("这个教学班级不存在");
+        }
+        // 检查学生是否存在
+        Optional<Student> studentOp = studentRepository.findByPersonNum(studentNum);
+        if (studentOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("这个学生不存在");
+        }
+        Student student = studentOp.get();
+
+        // 检查教学班级是否存在
+        ClassSchedule classSchedule = classOp.get();
+
+        // 检查学生是否已选择该教学班级
+        Optional<Score> existingScoreOp = scoreRepository.findByStudentPersonIdAndClassScheduleClassScheduleId(
+                studentOp.get().getPersonId(), classSchedule.getClassScheduleId());
+        if (existingScoreOp.isPresent()) {
+            return CommonMethod.getReturnMessageError("已选择该教学班级，不能重复选择");
+        }
+
+        // 创建新的成绩记录
+        Score score = new Score();
+        score.setStudent(student);
+        score.setClassSchedule(classSchedule);
+        score.setMark(null); // 初始成绩为空
+        score.setRanking(null); // 初始排名为空
+
+        scoreRepository.save(score);
+        systemService.modifyLog(score, true);
+
+        return CommonMethod.getReturnMessageOK("选课成功");
+    }
+
+    public DataResponse dropCourseForStudent(@Valid DataRequest dataRequest) {
+        String studentNum = dataRequest.getString("studentNum");
+        Integer classNum = dataRequest.getInteger("classNum");
+        String courseNum = dataRequest.getString("courseNum");
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+
+        var score = scoreRepository.findByStudent_Person_NumAndClassSchedule_Course_NumAndClassSchedule_ClassNumberAndClassSchedule_yearAndClassSchedule_semester(
+                studentNum, courseNum, classNum, year, semester);
+        // 检查是否已有成绩
+        if (score == null) {
+            return CommonMethod.getReturnMessageError("没有找到这个选课记录");
+        }
+        if (score.getMark() != null) {
+            return CommonMethod.getReturnMessageError("该课程已有成绩，不能退课");
+        }
+
+        // 删除成绩记录
+        scoreRepository.deleteById(score.getScoreId());
+
+        return CommonMethod.getReturnMessageOK("退课成功");
     }
 }
