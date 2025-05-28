@@ -36,15 +36,19 @@ public class CourseService {
         for (Course c : cList) {
             m = new HashMap<>();
             m.put("courseId", c.getCourseId() + "");
+
             m.put("num", c.getNum());
             m.put("name", c.getName());
             m.put("credit", c.getCredit() + "");
             m.put("coursePath", c.getCoursePath());
+            m.put("courseType", c.getCourseType() != null ? c.getCourseType() : "");
+            m.put("department", c.getDepartment() != null ? c.getDepartment() : "");
             pc = c.getPreCourse();
             if (pc != null) {
                 m.put("preCourse", pc.getName());
                 m.put("preCourseId", pc.getCourseId());
             }
+            m.put("description", c.getDescription() != null ? c.getDescription() : "");
             dataList.add(m);
         }
         return CommonMethod.getReturnData(dataList);
@@ -60,6 +64,9 @@ public class CourseService {
         String coursePath = dataRequest.getString("coursePath");
         Integer credit = dataRequest.getInteger("credit");
         Integer preCourseId = dataRequest.getInteger("preCourseId");
+        String courseType = dataRequest.getString("courseType");
+        String department = dataRequest.getString("department");
+        String description = dataRequest.getString("description");
         Optional<Course> op;
         Course c = null;
 
@@ -81,6 +88,9 @@ public class CourseService {
         c.setCredit(credit);
         c.setCoursePath(coursePath);
         c.setPreCourse(pc);
+        c.setCourseType(courseType);
+        c.setDepartment(department);
+        c.setDescription(description);
         courseRepository.save(c);
         return CommonMethod.getReturnMessageOK();
     }
