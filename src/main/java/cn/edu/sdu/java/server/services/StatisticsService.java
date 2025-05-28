@@ -120,4 +120,50 @@ public class StatisticsService {
         """;
         return jdbcTemplate.queryForList(sql);
     }
+    // 加入此方法到你的 StatisticsService.java 中
+    /** 5. 请假分布情况（例如：0次、1–2次、3–5次、5次以上） */
+    public List<Map<String, Object>> getLeaveStatistics() {
+        String sql = """
+        SELECT
+            st.person_id AS 学生ID,
+            p.name AS 学生姓名,
+            COUNT(*) AS 总请假次数,
+            SUM(CASE WHEN sl.is_approved = 1 THEN 1 ELSE 0 END) AS 批准请假次数
+        FROM student_leave sl
+        JOIN student st ON sl.student_id = st.person_id
+        JOIN person p ON st.person_id = p.person_id
+        GROUP BY st.person_id, p.name
+    """;
+        return jdbcTemplate.queryForList(sql);
+    }
+    /** 6. 请假次数分布（统计不同请假次数的人数） */
+    public List<Map<String, Object>> getLeaveDistribution() {
+        String sql = """
+        SELECT
+          CASE
+            WHEN total_leaves = 0 THEN '0次'
+            WHEN total_leaves = 1 THEN '1次'
+            WHEN total_leaves = 2 THEN '2次'
+            WHEN total_leaves = 3 THEN '3次'
+            WHEN total_leaves = 4 THEN '4次'
+            ELSE '5次及以上'
+          END AS 状态,
+          COUNT(*) AS 数量
+        FROM (
+          SELECT st.person_id, COUNT(*) AS total_leaves
+          FROM student_leave sl
+          JOIN student st ON sl.student_id = st.person_id
+          GROUP BY st.person_id
+        ) sub
+        GROUP BY 状态
+        ORDER BY 状态
+    """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
+
+
 }
+
+
+

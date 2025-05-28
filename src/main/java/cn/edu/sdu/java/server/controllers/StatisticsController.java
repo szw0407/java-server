@@ -49,4 +49,20 @@ public class StatisticsController {
         List<Map<String, Object>> data = statisticsService.getGenderDistribution();
         return new DataResponse(0, data, "success");
     }
+    // 加入此方法到你的 StatisticsController.java 中
+    @PostMapping("/leave-count")
+    public DataResponse leaveCount() {
+        List<Map<String, Object>> data = statisticsService.getLeaveStatistics();
+        return new DataResponse(0, data, "success");
+    }
+    @PostMapping("/leave-distribution")
+    public DataResponse leaveDistribution() {
+        List<Map<String, Object>> data = statisticsService.getLeaveDistribution();
+        return new DataResponse(0, data, "success");
+    }
+
+
+
+
+
 }
