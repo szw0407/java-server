@@ -63,6 +63,11 @@ public class TeachPlanController {
     public DataResponse addTeacherToPlan(@Valid @RequestBody DataRequest dataRequest) {
         return teachPlanService.addTeacherToPlan(dataRequest);
     }
+
+    @PostMapping("/getCoursePlanList")
+    public DataResponse getCoursePlanList(@Valid @RequestBody DataRequest dataRequest) {
+        return teachPlanService.getCoursePlanList(dataRequest);
+    }
     
     /**
      * 移除教师的教学计划

@@ -13,6 +13,7 @@ import cn.edu.sdu.java.server.repositorys.CourseRepository;
 import cn.edu.sdu.java.server.repositorys.TeachPlanRepository;
 import cn.edu.sdu.java.server.repositorys.TeacherRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -295,5 +296,33 @@ public class TeachPlanService {
             }
         }
         return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse getCoursePlanList(@Valid DataRequest dataRequest) {
+        String courseNum = dataRequest.getString("courseNum");
+        String semester = dataRequest.getString("semester");
+        String year = dataRequest.getString("year");
+        if (courseNum == null || semester == null || year == null) {
+            return CommonMethod.getReturnMessageError("课程编号、学期和年份不能为空");
+        }
+
+        List<TeachPlan> plans = teachPlanRepository.findByClassSchedule_Course_NumAndClassSchedule_YearAndClassSchedule_semester(courseNum, semester, year);
+
+        return CommonMethod.getReturnData(plans.stream().map(plan -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("teachPlanId", plan.getTeachPlanId());
+            m.put("teacherId", plan.getTeacher().getPersonId());
+            m.put("teacherName", plan.getTeacher().getPerson().getName());
+            m.put("classScheduleId", plan.getClassSchedule().getClassScheduleId());
+            m.put("courseId", plan.getClassSchedule().getCourse().getCourseId());
+            m.put("courseName", plan.getClassSchedule().getCourse().getName());
+            m.put("courseNumber", plan.getClassSchedule().getCourse().getNum());
+            m.put("semester", plan.getClassSchedule().getSemester());
+            m.put("year", plan.getClassSchedule().getYear());
+            m.put("classTime", plan.getClassSchedule().getClassTime());
+            m.put("classLocation", plan.getClassSchedule().getClassLocation());
+            return m;
+        }).collect(Collectors.toList()));
+
     }
 }
