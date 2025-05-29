@@ -204,13 +204,7 @@ public class CourseSelectionService {
         if (existingScoreOp.isPresent()) {
             return CommonMethod.getReturnMessageError("已选择该教学班级，不能重复选择");
         }
-        
-        // 检查学生是否已选择该课程的其他教学班级
-        List<Score> existingCourseScores = scoreRepository.findByStudentPersonIdAndCourseId(
-                personId, classSchedule.getCourse().getCourseId());
-        if (!existingCourseScores.isEmpty()) {
-            return CommonMethod.getReturnMessageError("该课程的其他教学班级已被选择，不能重复选择同一课程");
-        }
+
         
         // 创建新的成绩记录
         Score score = new Score();
@@ -221,8 +215,16 @@ public class CourseSelectionService {
         
         scoreRepository.save(score);
         systemService.modifyLog(score, true);
-        
-        return CommonMethod.getReturnMessageOK("选课成功");
+        // get score id
+        Integer scoreId = score.getScoreId();
+        // 返回选课成功的消息和成绩记录ID
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("scoreId", scoreId);
+        responseData.put("courseId", classSchedule.getCourse().getCourseId());
+        responseData.put("classScheduleId", classScheduleId);
+
+        return CommonMethod.getReturnData(responseData, "选课成功");
+//        return CommonMethod.getReturnMessageOK("选课成功");
     }
     
     /**
@@ -241,12 +243,12 @@ public class CourseSelectionService {
         }
         
         if (scoreId == null) {
-            return CommonMethod.getReturnMessageError("成绩记录ID不能为空");
+            return CommonMethod.getReturnMessageError("记录号不能为空");
         }
         
         // 检查成绩记录是否存在
         Optional<Score> scoreOp = scoreRepository.findById(scoreId);
-        if (!scoreOp.isPresent()) {
+        if (scoreOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("选课记录不存在");
         }
         

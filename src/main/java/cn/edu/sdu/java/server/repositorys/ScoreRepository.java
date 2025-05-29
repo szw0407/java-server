@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,4 +51,6 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     List<Score> findByClassSchedule_Course_Num(String courseNum);
 
     Optional<Score> findByStudent_Person_NumAndClassScheduleClassScheduleId(String personNum, Integer classId);
+
+    Collection<Object> findByStudent_Person_PersonId(Integer myid);
 }

@@ -30,4 +30,5 @@ public interface TeacherRepository extends JpaRepository<Teacher,Integer> {
     Page<Teacher> findTeacherPageByNumName(String numName, Pageable pageable);
 
 
+    Teacher findByPerson_PersonId(Integer myid);
 }
