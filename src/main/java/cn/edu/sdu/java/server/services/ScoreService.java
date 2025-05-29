@@ -44,7 +44,43 @@ public class ScoreService {
         }
         return new OptionItemList(0, itemList);
     }
+    public DataResponse getScoreListOfStudent(DataRequest dataRequest) {
+        var sList = new ArrayList<Score>();List<Map<String,Object>> dataList = new ArrayList<>();String num = dataRequest.getString("studentNum");String courseNum = dataRequest.getString("courseNum");
+        if(num == null) {
+            if (courseNum == null) {
+                sList = (ArrayList<Score>) scoreRepository.findAll();
+            } else {
+                sList = (ArrayList<Score>) scoreRepository.findByClassSchedule_Course_Num(courseNum);
+            }
+        }
 
+        else
+
+        if (courseNum == null) {
+            sList = (ArrayList<Score>) scoreRepository.findByStudent_Person_Num(num);
+        } else {
+            sList = (ArrayList<Score>) scoreRepository.findByStudent_Person_NumAndClassSchedule_Course_Num(num, courseNum);
+        }
+        Map<String,Object> m;
+        for (Score s : sList) {
+            m = new HashMap<>();
+            m.put("scoreId", s.getScoreId()+"");
+            m.put("personId",s.getStudent().getPersonId()+"");
+            m.put("courseId",s.getCourse().getCourseId()+"");
+            m.put("studentNum",s.getStudent().getPerson().getNum());
+            m.put("studentName",s.getStudent().getPerson().getName());
+            m.put("className",s.getStudent().getClassName());
+            m.put("courseNum",s.getCourse().getNum());
+            m.put("courseName",s.getCourse().getName());
+            m.put("teachClassNum", s.getClassSchedule().getClassNumber());
+            m.put("term", s.getClassSchedule().getSemester());
+            m.put("year", s.getClassSchedule().getYear());
+            m.put("credit",""+s.getCourse().getCredit());
+            m.put("mark",s.getMark());
+            dataList.add(m);
+        }
+        return CommonMethod.getReturnData(dataList);
+    }
     public DataResponse getScoreList(DataRequest dataRequest) {
         Integer personId = dataRequest.getInteger("personId");
         if(personId == null)
@@ -72,7 +108,7 @@ public class ScoreService {
         return CommonMethod.getReturnData(dataList);
     }
     public DataResponse scoreSave(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");
+        String personNum = dataRequest.getString("studentNum");
         Integer classId = dataRequest.getInteger("classId");
         Integer mark = dataRequest.getInteger("mark");
         Integer scoreId = dataRequest.getInteger("scoreId");
@@ -84,12 +120,17 @@ public class ScoreService {
                 s = op.get();
         }
         if(s == null) {
-            s = new Score();
-            s.setStudent(studentRepository.findById(personId).get());
-//            s.setCourse(courseRepository.findById(courseId).get());
-            s.setClassSchedule(
-                    classScheduleRepository.findById(classId).get()
-            );
+            // check if the score HAS EXISTS
+            op = scoreRepository.findByStudent_Person_NumAndClassScheduleClassScheduleId(personNum, classId);
+            if (op.isPresent()) {
+                if (op.get().getMark() != null) {
+                    return CommonMethod.getReturnMessageError("该学生在该教学班级已经有成绩记录，无法重复添加，请使用修改功能");
+                } else {
+                    s = op.get(); // 如果存在但没有成绩，则使用现有记录
+                }
+            } else {
+               return CommonMethod.getReturnMessageError("该学生在该教学班级没有选课记录，无法添加成绩");
+            }
         }
         s.setMark(mark);
         scoreRepository.save(s);
@@ -103,7 +144,8 @@ public class ScoreService {
             op= scoreRepository.findById(scoreId);
             if(op.isPresent()) {
                 s = op.get();
-                scoreRepository.delete(s);
+                s.setMark(null);
+                scoreRepository.save(s);
             }
         }
         return CommonMethod.getReturnMessageOK();

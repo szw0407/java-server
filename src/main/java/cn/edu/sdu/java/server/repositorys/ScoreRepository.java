@@ -42,4 +42,12 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
 
     Score findByStudent_Person_NumAndClassSchedule_Course_NumAndClassSchedule_ClassNumberAndClassSchedule_yearAndClassSchedule_semester(
             String studentNum, String courseNum, Integer classNum, String year, String semester);
+
+    List<Score> findByStudent_Person_Num(String num);
+
+    List<Score> findByStudent_Person_NumAndClassSchedule_Course_Num(String num, String courseNum);
+
+    List<Score> findByClassSchedule_Course_Num(String courseNum);
+
+    Optional<Score> findByStudent_Person_NumAndClassScheduleClassScheduleId(String personNum, Integer classId);
 }

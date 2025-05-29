@@ -35,4 +35,6 @@ public interface TeachPlanRepository extends JpaRepository<TeachPlan, Integer> {
     List<TeachPlan> findTeachPlansByClassSchedule(ClassSchedule classSchedule);
 
     List<TeachPlan> findByClassSchedule_Course_NumAndClassSchedule_YearAndClassSchedule_semester(String course_Num, String semester, String year);
+
+    List<TeachPlan> findByClassSchedule_Course_Num(String courseNum);
 }

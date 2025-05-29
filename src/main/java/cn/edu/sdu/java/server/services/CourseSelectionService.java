@@ -415,4 +415,45 @@ public class CourseSelectionService {
 
         return CommonMethod.getReturnMessageOK("退课成功");
     }
+
+    public DataResponse verifyStudentCourseSelection(@Valid DataRequest dataRequest) {
+        String studentNum = dataRequest.getString("studentNum");
+        String courseNum = dataRequest.getString("courseNum");
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+        Integer classNum = dataRequest.getInteger("classNum");
+
+        if (studentNum == null || courseNum == null || year == null || semester == null || classNum == null) {
+            return CommonMethod.getReturnMessageError("学生ID、课程编号、学期和年份不能为空");
+        }
+
+        // 检查学生是否存在
+        Optional<Student> studentOp = studentRepository.findByPersonNum(studentNum);
+        if (studentOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("学生不存在");
+        }
+
+        // 检查课程是否存在
+        Optional<Course> courseOp = courseRepository.findByNum(courseNum);
+        if (courseOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("课程不存在");
+        }
+
+        // 检查教学班级是否存在
+        Optional<ClassSchedule> classOp = classScheduleRepository.findByClassNumberAndSemesterAndYearAndCourse_CourseId(
+                classNum, semester, year, courseOp.get().getCourseId());
+        if (classOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("教学班级不存在");
+        }
+
+        // 检查学生是否已选该课程
+        Optional<Score> scoreOp = Optional.ofNullable(scoreRepository.findByStudent_Person_NumAndClassSchedule_Course_NumAndClassSchedule_ClassNumberAndClassSchedule_yearAndClassSchedule_semester(
+                studentNum, courseNum, classNum, year, semester));
+
+        if (scoreOp.isPresent()) {
+            return CommonMethod.getReturnData(scoreOp.get().getScoreId());
+        }
+
+        return CommonMethod.getReturnMessageOK("验证通过，可以进行选课操作");
+    }
 }

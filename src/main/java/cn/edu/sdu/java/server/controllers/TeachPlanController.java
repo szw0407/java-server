@@ -45,7 +45,11 @@ public class TeachPlanController {
     public DataResponse getTeacherPlanList(@Valid @RequestBody DataRequest dataRequest) {
         return teachPlanService.getTeacherPlanList(dataRequest);
     }
-    
+    @PostMapping("/getStudentPlanList")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    public DataResponse getStudentPlanList(@Valid @RequestBody DataRequest dataRequest) {
+        return teachPlanService.getStudentPlanList(dataRequest);
+    }
     /**
      * 获取当前学期的教学班级列表
      */
@@ -95,4 +99,8 @@ public class TeachPlanController {
     public DataResponse updateClassSchedule(@Valid @RequestBody DataRequest dataRequest) {
         return teachPlanService.updateClassSchedule(dataRequest);
     }
+
+    @PostMapping("/checkTeachPlanByInfo")
+    public  DataResponse checkTeachPlanByInfo(@Valid @RequestBody DataRequest dataRequest) {
+        return teachPlanService.checkTeachPlanByInfo(dataRequest);}
 }

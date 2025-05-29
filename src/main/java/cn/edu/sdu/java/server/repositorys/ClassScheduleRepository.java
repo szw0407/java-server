@@ -2,6 +2,7 @@ package cn.edu.sdu.java.server.repositorys;
 
 import cn.edu.sdu.java.server.models.ClassSchedule;
 import cn.edu.sdu.java.server.models.Course;
+import cn.edu.sdu.java.server.models.TeachPlan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -33,4 +34,6 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, In
      * 根据班号查找教学班级
      */
     Optional<ClassSchedule> findByClassNumberAndSemesterAndYearAndCourse_CourseId(Integer classNumber, String semester, String year, Integer courseId);
+
+    List<ClassSchedule> findByCourse_NumAndYearAndSemester(String courseNum, String year, String semester);
 }

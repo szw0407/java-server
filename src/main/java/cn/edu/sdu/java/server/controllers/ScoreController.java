@@ -26,6 +26,11 @@ public class ScoreController {
         return scoreService.getCourseItemOptionList(dataRequest);
     }
 
+    @PostMapping("/getScoreListOfStudent")
+    public DataResponse getScoreListOfStudent(@Valid @RequestBody DataRequest dataRequest) {
+        return scoreService.getScoreListOfStudent(dataRequest);
+    }
+
     @PostMapping("/getScoreList")
     public DataResponse getScoreList(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.getScoreList(dataRequest);
@@ -38,5 +43,7 @@ public class ScoreController {
     public DataResponse scoreDelete(@Valid @RequestBody DataRequest dataRequest) {
         return scoreService.scoreDelete(dataRequest);
     }
+
+
 
 }

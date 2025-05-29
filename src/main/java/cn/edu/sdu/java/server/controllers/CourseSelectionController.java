@@ -78,5 +78,10 @@ public class CourseSelectionController {
         return courseSelectionService.dropCourse(dataRequest);
     }
 
+    @PostMapping("/verifyStudentCourseSelection")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STUDENT')")
+    public DataResponse verifyStudentCourseSelection(@Valid @RequestBody DataRequest dataRequest) {
+        return courseSelectionService.verifyStudentCourseSelection(dataRequest);
+    }
 
 }

@@ -1,17 +1,11 @@
 package cn.edu.sdu.java.server.services;
 
-import cn.edu.sdu.java.server.models.ClassSchedule;
-import cn.edu.sdu.java.server.models.Course;
-import cn.edu.sdu.java.server.models.Teacher;
-import cn.edu.sdu.java.server.models.TeachPlan;
+import cn.edu.sdu.java.server.models.*;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
-import cn.edu.sdu.java.server.repositorys.ClassScheduleRepository;
-import cn.edu.sdu.java.server.repositorys.CourseRepository;
-import cn.edu.sdu.java.server.repositorys.TeachPlanRepository;
-import cn.edu.sdu.java.server.repositorys.TeacherRepository;
+import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.CommonMethod;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -30,15 +24,17 @@ public class TeachPlanService {
     private final ClassScheduleRepository classScheduleRepository;
     private final CourseRepository courseRepository;
     private final SystemService systemService;
+    private final ScoreRepository scoreRepository;
 
     public TeachPlanService(TeachPlanRepository teachPlanRepository, TeacherRepository teacherRepository, 
                            ClassScheduleRepository classScheduleRepository, CourseRepository courseRepository,
-                           SystemService systemService) {
+                           SystemService systemService, ScoreRepository scoreRepository) {
         this.teachPlanRepository = teachPlanRepository;
         this.teacherRepository = teacherRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.courseRepository = courseRepository;
         this.systemService = systemService;
+        this.scoreRepository = scoreRepository;
     }
 
     /**
@@ -300,13 +296,11 @@ public class TeachPlanService {
 
     public DataResponse getCoursePlanList(@Valid DataRequest dataRequest) {
         String courseNum = dataRequest.getString("courseNum");
-        String semester = dataRequest.getString("semester");
-        String year = dataRequest.getString("year");
-        if (courseNum == null || semester == null || year == null) {
-            return CommonMethod.getReturnMessageError("课程编号、学期和年份不能为空");
+        if (courseNum == null) {
+            return CommonMethod.getReturnMessageError("课程编号不能为空");
         }
 
-        List<TeachPlan> plans = teachPlanRepository.findByClassSchedule_Course_NumAndClassSchedule_YearAndClassSchedule_semester(courseNum, semester, year);
+        List<TeachPlan> plans = teachPlanRepository.findByClassSchedule_Course_Num(courseNum);
 
         return CommonMethod.getReturnData(plans.stream().map(plan -> {
             Map<String, Object> m = new HashMap<>();
@@ -324,5 +318,65 @@ public class TeachPlanService {
             return m;
         }).collect(Collectors.toList()));
 
+    }
+
+    public DataResponse checkTeachPlanByInfo(@Valid DataRequest dataRequest) {
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+        String courseNum = dataRequest.getString("courseNum");
+        Integer classNumber = dataRequest.getInteger("classNumber");
+
+        if (year == null || semester == null || courseNum == null || classNumber == null) {
+            return CommonMethod.getReturnMessageError("学年、学期、课程编号和班级号不能为空");
+        }
+
+        List<ClassSchedule> plans = classScheduleRepository.findByCourse_NumAndYearAndSemester(
+                courseNum, year, semester);
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (var plan : plans) {
+            Map<String, Object> m = new HashMap<>();
+
+            m.put("classScheduleId", plan.getClassScheduleId());
+
+            dataList.add(m);
+        }
+        if (dataList.isEmpty()) {
+            return CommonMethod.getReturnMessageError("没有找到对应的教学计划");
+        }
+        if (dataList.size() > 1) {
+            return CommonMethod.getReturnMessageError("找到多个教学计划，请检查数据库，存在异常数据需要运维排查");
+        }
+        return CommonMethod.getReturnData(dataList.getFirst());
+    }
+
+    public DataResponse getStudentPlanList(@Valid DataRequest dataRequest) {
+//        Integer studentId = dataRequest.getInteger("studentId");
+        String studentNum = dataRequest.getString("studentNum");
+        if (studentNum == null) {
+            return CommonMethod.getReturnMessageError("学生ID不能为空");
+        }
+
+        List<ClassSchedule> plans = scoreRepository.findByStudent_Person_Num(studentNum).stream()
+                .map(Score::getClassSchedule).toList();
+
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (ClassSchedule classSchedule : plans) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("classScheduleId", classSchedule.getClassScheduleId());
+            m.put("classNum", classSchedule.getClassNumber());
+            m.put("courseId", classSchedule.getCourse().getCourseId());
+            m.put("courseName", classSchedule.getCourse().getName());
+            m.put("courseNumber", classSchedule.getCourse().getNum());
+            m.put("credit", classSchedule.getCourse().getCredit());
+            m.put("semester", classSchedule.getSemester());
+            m.put("year", classSchedule.getYear());
+            m.put("classTime", classSchedule.getClassTime());
+            m.put("classLocation", classSchedule.getClassLocation());
+            dataList.add(m);
+        }
+
+        return CommonMethod.getReturnData(dataList);
     }
 }
