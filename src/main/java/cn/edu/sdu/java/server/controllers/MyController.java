@@ -33,4 +33,11 @@ class MyController {
     public DataResponse getMyScoreList(@Valid @RequestBody DataRequest dataRequest) {
         return MyService.getMyScoreList(dataRequest);
     }
+
+    @PostMapping("/StudentList")
+    @PreAuthorize("hasRole('TEACHER')")
+    public DataResponse getMyStudentList(@Valid @RequestBody DataRequest dataRequest) {
+        return MyService.getMyStudentList(dataRequest);
+    }
+
 }

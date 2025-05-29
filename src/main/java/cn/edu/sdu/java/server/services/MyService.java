@@ -141,7 +141,7 @@ public class MyService {
             m.put("semester", score.getClassSchedule().getSemester());
             m.put("year", score.getClassSchedule().getYear());
             m.put("credit", score.getClassSchedule().getCourse().getCredit());
-            m.put("mark", score.getMark());
+            m.put("mark", score.getMark() == null ? "" : score.getMark().toString());
             m.put("studentNum", score.getStudent().getPerson().getNum());
             m.put("studentName", score.getStudent().getPerson().getName());
             dataList.add(m);
@@ -218,4 +218,24 @@ public class MyService {
 
         return CommonMethod.getReturnData(dataList);
     }
+
+    public static DataResponse getMyStudentList(@Valid DataRequest dataRequest) {
+        var myid = getPersonId();
+
+//        Set<Student> ls = new HashSet<>();
+        // I need wo find all my courses and then get the students
+        List<Student> ls = teachPlanRepository.findByTeacherPersonId(myid).stream()
+                .flatMap(tp -> tp.getClassSchedule().getScores().stream())
+                .map(Score::getStudent)
+                .distinct()
+                .toList();
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (Student student : ls) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("className", student.getClassName());
+            m.put("num", student.getPerson().getNum());
+            m.put("name", student.getPerson().getName());
+            dataList.add(m);
+
+    }return CommonMethod.getReturnData(dataList);}
 }
