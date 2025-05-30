@@ -29,4 +29,11 @@ public interface PostRepository extends JpaRepository<Post, Integer> {
     // 文件路径: src/main/java/cn/edu/sdu/java/server/repositorys/PostRepository.java
     @Query("from Post where isTop = true order by createTime desc")
     List<Post> findTopPosts();
+
+    // 统计每日新建帖子数量
+    @Query("SELECT DATE(p.createTime) AS postDate, COUNT(p) AS postCount " +
+            "FROM Post p " +
+            "GROUP BY DATE(p.createTime) " +
+            "ORDER BY postDate ASC")
+    List<Object[]> countPostsByDate();
 }

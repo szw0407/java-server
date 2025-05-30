@@ -206,4 +206,16 @@ public class PostService {
         return CommonMethod.getReturnData(commentList);
     }
 
+    public DataResponse getDailyPostStatistics() {
+        List<Object[]> results = postRepository.countPostsByDate();
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (Object[] result : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("date", result[0]); // 日期
+            map.put("count", result[1]); // 帖子数量
+            dataList.add(map);
+        }
+        return CommonMethod.getReturnData(dataList);
+    }
+
 }
