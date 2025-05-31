@@ -205,6 +205,15 @@ public class CourseSelectionService {
             return CommonMethod.getReturnMessageError("已选择该教学班级，不能重复选择");
         }
 
+        // 检查学生当前学期有没有选中相同课程的其他班级
+        List<Score> existingScores = scoreRepository.findByStudentPersonIdAndClassSchedule_SemesterAndClassSchedule_YearAndClassSchedule_Course_CourseId(
+                personId, classSchedule.getSemester(), classSchedule.getYear(), classSchedule.getCourse().getCourseId()
+        );
+
+        if (!existingScores.isEmpty()) {
+            return CommonMethod.getReturnMessageError("当前学期已选该课程的其他班级，不能重复选择");
+        }
+
         
         // 创建新的成绩记录
         Score score = new Score();

@@ -30,7 +30,7 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     List<Score> findByStudentPersonIdAndCourseId(Integer personId, Integer courseId);
     
     // 根据学生ID和教学班级ID查询成绩记录，用于检查学生是否已选某教学班级
-    Optional<Score> findByStudentPersonIdAndClassScheduleClassScheduleId(Integer personId, Integer classScheduleId);
+    Optional<Score> findByStudentPersonIdAndClassSchedule_Course_CourseId(Integer personId, Integer courseId);
     
     // 查询学生在特定学期的选课记录
     @Query("from Score where student.personId = ?1 and classSchedule.semester = ?2 and classSchedule.year = ?3")
@@ -40,6 +40,8 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     Score findByClassSchedule_ClassScheduleIdAndStudentPersonId(Integer classScheduleId, Integer personId);
     @Query("select s from Score s where s.classSchedule.semester = ?1 and s.classSchedule.year = ?2")
     List<Score> findBySemesterAndYear(String semester, String year);
+    List<Score> findByStudentPersonIdAndClassSchedule_SemesterAndClassSchedule_YearAndClassSchedule_Course_CourseId(
+            Integer personId, String semester, String year, Integer courseId);
 
     Score findByStudent_Person_NumAndClassSchedule_Course_NumAndClassSchedule_ClassNumberAndClassSchedule_yearAndClassSchedule_semester(
             String studentNum, String courseNum, Integer classNum, String year, String semester);
@@ -53,4 +55,6 @@ public interface ScoreRepository extends JpaRepository<Score,Integer> {
     Optional<Score> findByStudent_Person_NumAndClassScheduleClassScheduleId(String personNum, Integer classId);
 
     Collection<Object> findByStudent_Person_PersonId(Integer myid);
+
+    Optional<Score> findByStudentPersonIdAndClassScheduleClassScheduleId(Integer personId, Integer classScheduleId);
 }
