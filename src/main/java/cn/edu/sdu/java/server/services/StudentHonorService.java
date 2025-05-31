@@ -26,22 +26,35 @@ public class StudentHonorService {
     public StudentHonorService(StudentHonorRepository studentHonorRepository, StudentRepository studentRepository) {
         this.studentHonorRepository = studentHonorRepository;
         this.studentRepository = studentRepository;
-    }
-
-    public Map<String, Object> getMapFromStudentHonor(StudentHonor honor) {
+    }    public Map<String, Object> getMapFromStudentHonor(StudentHonor honor) {
         Map<String, Object> map = new HashMap<>();
         if (honor == null) return map;
         map.put("id", honor.getId());
         map.put("studentId", honor.getStudentId());
         map.put("title", honor.getTitle());
         map.put("description", honor.getDescription());
+        
+        // 如果有学生关联，添加学生详细信息
+        if (honor.getStudent() != null) {
+            Student student = honor.getStudent();
+            if (student.getPerson() != null) {
+                map.put("studentName", student.getPerson().getName());
+                map.put("studentNum", student.getPerson().getNum());
+                map.put("className", student.getClassName());
+                map.put("major", student.getMajor());
+            }
+        }
+        
         return map;
-    }
-
-    public List<Map<String, Object>> getStudentHonorMapList(String numName) {
-        List<StudentHonor> honors = studentHonorRepository.findAll();
+    }    public List<Map<String, Object>> getStudentHonorMapList(String numName) {
+        List<StudentHonor> honors;
+        if (numName == null || numName.trim().isEmpty()) {
+            honors = studentHonorRepository.findAll();
+        } else {
+            // 使用新的支持模糊查询的方法
+            honors = studentHonorRepository.findByNumName(numName.trim());
+        }
         return honors.stream()
-                .filter(honor -> honor.getTitle().contains(numName) || honor.getDescription().contains(numName))
                 .map(this::getMapFromStudentHonor)
                 .collect(Collectors.toList());
     }
@@ -65,9 +78,7 @@ public class StudentHonorService {
         Optional<StudentHonor> honor = studentHonorRepository.findById(id);
         return honor.map(h -> CommonMethod.getReturnData(getMapFromStudentHonor(h)))
                 .orElseGet(() -> CommonMethod.getReturnMessageError("Honor not found"));
-    }
-
-    public DataResponse studentHonorEditSave(DataRequest dataRequest) {
+    }    public DataResponse studentHonorEditSave(DataRequest dataRequest) {
         Integer id = dataRequest.getInteger("id");
         Map<String, Object> form = dataRequest.getMap("form");
         StudentHonor honor = null;
@@ -81,27 +92,29 @@ public class StudentHonorService {
             honor = new StudentHonor();
         }
 
-        Optional<Student> s=studentRepository.findById(CommonMethod.getInteger(form, "studentId"));
-        if (!s.isPresent()) {
+        // 查找学生实体并建立关联
+        Integer studentId = CommonMethod.getInteger(form, "studentId");
+        Optional<Student> studentOpt = studentRepository.findById(studentId);
+        if (!studentOpt.isPresent()) {
             return CommonMethod.getReturnMessageError("该学生不存在");
         }
-        honor.setStudentId(CommonMethod.getInteger(form, "studentId"));
+        
+        // 设置学生关联关系
+        honor.setStudent(studentOpt.get());
         honor.setTitle(CommonMethod.getString(form, "title"));
         honor.setDescription(CommonMethod.getString(form, "description"));
         studentHonorRepository.save(honor);
 
-
-
         return CommonMethod.getReturnData(honor.getId());
-    }
-
-    public ResponseEntity<StreamingResponseBody> getStudentHonorListExcl(DataRequest dataRequest) {
+    }    public ResponseEntity<StreamingResponseBody> getStudentHonorListExcl(DataRequest dataRequest) {
         String numName = dataRequest.getString("numName");
-        List<Map<String, Object>> list = getStudentHonorMapList(numName);
-        // Implement the logic to generate and return the Excel file
-        // This is a placeholder for the actual implementation
+        // TODO: 实现Excel导出功能
+        // 目前返回空的Excel文件作为占位符
         return ResponseEntity.ok().body(outputStream -> {
-            // Write the Excel file to the outputStream
+            List<Map<String, Object>> dataList = getStudentHonorMapList(numName);
+            // 实际应用中需要使用Apache POI等库来生成Excel文件
+            // 这里暂时写入一个简单的文本作为占位符
+            outputStream.write(("导出" + dataList.size() + "条学生荣誉记录").getBytes());
         });
     }
 }
