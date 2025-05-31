@@ -221,7 +221,15 @@ public class MyService {
 
     public static DataResponse getMyStudentList(@Valid DataRequest dataRequest) {
         var myid = getPersonId();
-
+        // if student, return self
+        var s = studentRepository.findByPerson_PersonId(myid);
+        if (s != null) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("className", s.getClassName());
+            m.put("num", s.getPerson().getNum());
+            m.put("name", s.getPerson().getName());
+            return CommonMethod.getReturnData(List.of(m));
+        }
 //        Set<Student> ls = new HashSet<>();
         // I need wo find all my courses and then get the students
         List<Student> ls = teachPlanRepository.findByTeacherPersonId(myid).stream()
