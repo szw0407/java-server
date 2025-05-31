@@ -119,22 +119,43 @@ public class TeacherService {
     }
 
     public DataResponse teacherDelete(DataRequest dataRequest) {
-        Integer personId = dataRequest.getInteger("personId");  //获取student_id值
+        Integer personId = dataRequest.getInteger("personId");  //获取teacher_id值
         Teacher t = null;
-        Optional<Teacher> op;//Optional<Student> 是 Java 8 引入的一种安全机制，用于避免空指针异常.如果为空，返回空的optional对象。
+        Optional<Teacher> op;
         if (personId != null && personId > 0) {
-            op = teacherRepository.findById(personId);   //查询获得实体对象
-            if(op.isPresent()) {
-                t = op.get();
-                Optional<User> uOp = userRepository.findById(personId);
+            try {
+                op = teacherRepository.findById(personId);   //查询获得实体对象
+                if(op.isPresent()) {
+                    t = op.get();
+                    Optional<User> uOp = userRepository.findById(personId);
 
-                uOp.ifPresent(userRepository::delete);
-                Person p = t.getPerson();
-                teacherRepository.delete(t);
-                personRepository.delete(p);
+                    uOp.ifPresent(userRepository::delete);
+                    Person p = t.getPerson();
+                    teacherRepository.delete(t);
+                    personRepository.delete(p);
+                }
+                return CommonMethod.getReturnMessageOK();  //通知前端操作正常
+            } catch (org.springframework.dao.DataIntegrityViolationException e) {
+                // 捕获外键约束异常
+                String errorMsg = "无法删除该教师，因为存在关联数据";
+                // 从异常中提取更详细的信息
+                String message = e.getMessage();
+                if (message != null) {
+                    if (message.contains("course")) {
+                        errorMsg = "该教师有关联的课程记录，无法删除";
+                    } else if (message.contains("score")) {
+                        errorMsg = "该教师有关联的成绩记录，无法删除";
+                    } else if (message.contains("student_leave")) {
+                        errorMsg = "该教师有关联的学生请假审批记录，无法删除";
+                    }
+                }
+                return CommonMethod.getReturnMessageError(errorMsg);
+            } catch (Exception e) {
+                // 捕获其他可能的异常
+                return CommonMethod.getReturnMessageError("删除教师失败：" + e.getMessage());
             }
         }
-        return CommonMethod.getReturnMessageOK();  //通知前端操作正常
+        return CommonMethod.getReturnMessageOK();
     }
 
     public DataResponse getTeacherInfo(DataRequest dataRequest) {

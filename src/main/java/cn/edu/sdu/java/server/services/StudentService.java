@@ -144,17 +144,40 @@ public class StudentService {
         Student s = null;
         Optional<Student> op;
         if (personId != null && personId > 0) {
-            op = studentRepository.findById(personId);   //查询获得实体对象
-            if(op.isPresent()) {
-                s = op.get();
-                Optional<User> uOp = userRepository.findById(personId); //查询对应该学生的账户
-                //删除对应该学生的账户
-                uOp.ifPresent(userRepository::delete);
-                Person p = s.getPerson();
-                studentRepository.delete(s);    //首先数据库永久删除学生信息
-                personRepository.delete(p);   // 然后数据库永久删除学生信息
+            try {
+                op = studentRepository.findById(personId);   //查询获得实体对象
+                if (op.isPresent()) {
+                    s = op.get();
+                    Optional<User> uOp = userRepository.findById(personId); //查询对应该学生的账户
+                    //删除对应该学生的账户
+                    uOp.ifPresent(userRepository::delete);
+                    Person p = s.getPerson();
+                    studentRepository.delete(s);    //首先数据库永久删除学生信息
+                    personRepository.delete(p);   // 然后数据库永久删除学生信息
+                }
+            }catch (org.springframework.dao.DataIntegrityViolationException e) {
+                // 捕获外键约束异常
+                String errorMsg = "无法删除该学生，因为存在关联数据";
+                // 从异常中提取更详细的信息
+                String message = e.getMessage();
+                if (message != null) {
+                    if (message.contains("score")) {
+                        errorMsg = "该学生有关联的成绩记录，无法删除";
+                    } else if (message.contains("student_leave")) {
+                        errorMsg = "该学生有关联的请假记录，无法删除";
+                    } else if (message.contains("family_member")) {
+                        errorMsg = "该学生有关联的家庭成员记录，无法删除";
+                    } else if (message.contains("fee")) {
+                        errorMsg = "该学生有关联的消费记录，无法删除";
+                    }
+                }
+                return CommonMethod.getReturnMessageError(errorMsg);
+            } catch (Exception e) {
+                // 捕获其他可能的异常
+                return CommonMethod.getReturnMessageError("删除学生失败：" + e.getMessage());
             }
         }
+
         return CommonMethod.getReturnMessageOK();  //通知前端操作正常
     }
 
@@ -532,5 +555,4 @@ public class StudentService {
         }
         return CommonMethod.getReturnMessageError("上传错误！");
     }
-
 }
