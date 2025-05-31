@@ -122,12 +122,34 @@ public class MyService {
         if (s == null && t == null) {
             return CommonMethod.getReturnData("error", "You are not a student or teacher.");
         }
+        // if semester and year are not provided, return all scores
+
         if (s != null) {
-            scores = scoreRepository.findStudentSemesterCourses(myid, semester, year);
+            if (semester == null && year == null) {
+                scores = scoreRepository.findByStudentPersonId(myid);
+            } else {
+                if (semester == null) {
+                    return CommonMethod.getReturnMessageError("学期不能为空");
+                } else if (year == null) {
+                    return CommonMethod.getReturnMessageError("年份不能为空");
+                }
+                scores = scoreRepository.findStudentSemesterCourses(myid, semester, year);
+            }
         } else {
+            if (semester == null && year == null) {
+                scores = teachPlanRepository.findByTeacherPersonId(myid).stream()
+                        .flatMap(tp -> tp.getClassSchedule().getScores().stream()).collect(Collectors.toList());
+            } else {
+                if (semester == null) {
+                    return CommonMethod.getReturnMessageError("学期不能为空");
+                } else if (year == null) {
+                    return CommonMethod.getReturnMessageError("年份不能为空");
+                }
+                // find by semester and year
+
             scores = teachPlanRepository.findTeacherSemesterPlans(myid, semester, year).stream()
                     .flatMap(tp -> tp.getClassSchedule().getScores().stream()).collect(Collectors.toList());
-        }
+        }}
 
         List<Map<String, Object>> dataList = new ArrayList<>();
         for (var score : scores) {
