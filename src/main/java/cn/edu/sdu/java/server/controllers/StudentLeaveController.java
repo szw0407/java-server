@@ -91,4 +91,10 @@ public class StudentLeaveController {
     public ResponseEntity<StreamingResponseBody> exportLeaveData(@Valid @RequestBody DataRequest dataRequest) {
         return studentLeaveService.exportLeaveData(dataRequest);
     }
+
+    @PostMapping("/approveLeave")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('TEACHER')")
+    public DataResponse approveLeave(@Valid @RequestBody DataRequest dataRequest) {
+        return studentLeaveService.approveLeave(dataRequest);
+    }
 }

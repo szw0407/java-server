@@ -1,23 +1,19 @@
 package cn.edu.sdu.java.server.services;
 
-import cn.edu.sdu.java.server.models.ClassSchedule;
-import cn.edu.sdu.java.server.models.Course;
-import cn.edu.sdu.java.server.models.Teacher;
-import cn.edu.sdu.java.server.models.TeachPlan;
+import cn.edu.sdu.java.server.models.*;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.payload.response.OptionItem;
 import cn.edu.sdu.java.server.payload.response.OptionItemList;
-import cn.edu.sdu.java.server.repositorys.ClassScheduleRepository;
-import cn.edu.sdu.java.server.repositorys.CourseRepository;
-import cn.edu.sdu.java.server.repositorys.TeachPlanRepository;
-import cn.edu.sdu.java.server.repositorys.TeacherRepository;
+import cn.edu.sdu.java.server.repositorys.*;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TeachPlanService {
@@ -28,15 +24,17 @@ public class TeachPlanService {
     private final ClassScheduleRepository classScheduleRepository;
     private final CourseRepository courseRepository;
     private final SystemService systemService;
+    private final ScoreRepository scoreRepository;
 
     public TeachPlanService(TeachPlanRepository teachPlanRepository, TeacherRepository teacherRepository, 
                            ClassScheduleRepository classScheduleRepository, CourseRepository courseRepository,
-                           SystemService systemService) {
+                           SystemService systemService, ScoreRepository scoreRepository) {
         this.teachPlanRepository = teachPlanRepository;
         this.teacherRepository = teacherRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.courseRepository = courseRepository;
         this.systemService = systemService;
+        this.scoreRepository = scoreRepository;
     }
 
     /**
@@ -89,6 +87,7 @@ public class TeachPlanService {
             m.put("classScheduleId", plan.getClassSchedule().getClassScheduleId());
             m.put("courseId", plan.getClassSchedule().getCourse().getCourseId());
             m.put("courseName", plan.getClassSchedule().getCourse().getName());
+            m.put("courseNumber", plan.getClassSchedule().getCourse().getNum());
             m.put("semester", plan.getClassSchedule().getSemester());
             m.put("year", plan.getClassSchedule().getYear());
             m.put("classTime", plan.getClassSchedule().getClassTime());
@@ -110,14 +109,18 @@ public class TeachPlanService {
         List<Map<String, Object>> dataList = new ArrayList<>();
         for (ClassSchedule classSchedule : classes) {
             Map<String, Object> m = new HashMap<>();
-            m.put("classScheduleId", classSchedule.getClassScheduleId());
+            m.put("classScheduleId", classSchedule.getClassScheduleId().toString());
             m.put("courseId", classSchedule.getCourse().getCourseId());
             m.put("courseName", classSchedule.getCourse().getName());
             m.put("classNumber", classSchedule.getClassNumber());
+            m.put("courseNumber", classSchedule.getCourse().getNum());
             m.put("semester", classSchedule.getSemester());
             m.put("year", classSchedule.getYear());
             m.put("classTime", classSchedule.getClassTime());
             m.put("classLocation", classSchedule.getClassLocation());
+            m.put("teacherIds", classSchedule.getTeachers().stream()
+                    .map(Teacher::getPersonId)
+                    .collect(Collectors.toList()));
             dataList.add(m);
         }
         
@@ -138,11 +141,11 @@ public class TeachPlanService {
         Optional<Teacher> teacherOp = teacherRepository.findById(teacherId);
         Optional<ClassSchedule> classScheduleOp = classScheduleRepository.findById(classScheduleId);
         
-        if (!teacherOp.isPresent()) {
+        if (teacherOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("教师不存在");
         }
         
-        if (!classScheduleOp.isPresent()) {
+        if (classScheduleOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("教学班级不存在");
         }
         
@@ -176,7 +179,7 @@ public class TeachPlanService {
         }
         
         Optional<TeachPlan> planOp = teachPlanRepository.findById(teachPlanId);
-        if (!planOp.isPresent()) {
+        if (planOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("教学计划不存在");
         }
         
@@ -194,19 +197,19 @@ public class TeachPlanService {
         Integer classNumber = dataRequest.getInteger("classNumber");
         String classTime = dataRequest.getString("classTime");
         String classLocation = dataRequest.getString("classLocation");
-        
         if (courseId == null || semester == null || year == null || classNumber == null) {
             return CommonMethod.getReturnMessageError("课程ID、学期、年份和班号不能为空");
         }
+        var teacherIds = dataRequest.getList("teacherIds");
         
         Optional<Course> courseOp = courseRepository.findById(courseId);
-        if (!courseOp.isPresent()) {
+        if (courseOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("课程不存在");
         }
         
         // 检查该班号在该学期是否已存在
-        Optional<ClassSchedule> existingClass = classScheduleRepository.findByClassNumberAndSemesterAndYear(
-                classNumber, semester, year);
+        Optional<ClassSchedule> existingClass = classScheduleRepository.findByClassNumberAndSemesterAndYearAndCourse_CourseId(
+                classNumber, semester, year, courseId);
                 
         if (existingClass.isPresent()) {
             return CommonMethod.getReturnMessageError("该班号在本学期已存在");
@@ -220,11 +223,28 @@ public class TeachPlanService {
         classSchedule.setYear(year);
         classSchedule.setClassTime(classTime);
         classSchedule.setClassLocation(classLocation);
-        classSchedule.setTeachers(new ArrayList<>());
-        
         classScheduleRepository.save(classSchedule);
+        // clear all teachers
+        teachPlanRepository.deleteAll(teachPlanRepository.findTeachPlansByClassSchedule(classSchedule));
+
+        for (var teacherid: teacherIds) {
+            // add this teacherid (it should be integer)
+            Integer _id = (Integer) teacherid;
+            Optional<Teacher> teacherOp = teacherRepository.findById(_id);
+            if (teacherOp.isEmpty()) {
+                return CommonMethod.getReturnMessageError("教师ID " + _id + " 不存在");
+            }
+
+            var teachplan = new TeachPlan();
+            teachplan.setClassSchedule(classSchedule);
+            teachplan.setTeacher(teacherOp.get());
+
+            teachPlanRepository.save(teachplan);
+
+        }
+
         systemService.modifyLog(classSchedule, true);
-        
+
         return CommonMethod.getReturnData(classSchedule.getClassScheduleId());
     }
     
@@ -235,13 +255,13 @@ public class TeachPlanService {
         Integer classScheduleId = dataRequest.getInteger("classScheduleId");
         String classTime = dataRequest.getString("classTime");
         String classLocation = dataRequest.getString("classLocation");
-        
+        List<Integer> ids = (List<Integer>) dataRequest.getList("teacherIds");
         if (classScheduleId == null) {
             return CommonMethod.getReturnMessageError("教学班级ID不能为空");
         }
         
         Optional<ClassSchedule> classScheduleOp = classScheduleRepository.findById(classScheduleId);
-        if (!classScheduleOp.isPresent()) {
+        if (classScheduleOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("教学班级不存在");
         }
         
@@ -254,6 +274,109 @@ public class TeachPlanService {
         }
         
         classScheduleRepository.save(classSchedule);
+        teachPlanRepository.deleteAll(teachPlanRepository.findTeachPlansByClassSchedule(classSchedule));
+        for (Integer teacherId : ids) {
+            Optional<Teacher> teacherOp = teacherRepository.findById(teacherId);
+            if (teacherOp.isPresent()) {
+                // 检查教师是否已经分配到该教学班级
+                Optional<TeachPlan> existingPlan = teachPlanRepository.findByTeacherPersonIdAndClassScheduleClassScheduleId(
+                        teacherId, classScheduleId);
+                if (!existingPlan.isPresent()) {
+                    TeachPlan teachPlan = new TeachPlan();
+                    teachPlan.setClassSchedule(classSchedule);
+                    teachPlan.setTeacher(teacherOp.get());
+                    teachPlanRepository.save(teachPlan);
+                }
+            } else {
+                return CommonMethod.getReturnMessageError("教师ID " + teacherId + " 不存在");
+            }
+        }
         return CommonMethod.getReturnMessageOK();
+    }
+
+    public DataResponse getCoursePlanList(@Valid DataRequest dataRequest) {
+        String courseNum = dataRequest.getString("courseNum");
+        if (courseNum == null) {
+            return CommonMethod.getReturnMessageError("课程编号不能为空");
+        }
+
+        List<TeachPlan> plans = teachPlanRepository.findByClassSchedule_Course_Num(courseNum);
+
+        return CommonMethod.getReturnData(plans.stream().map(plan -> {
+            Map<String, Object> m = new HashMap<>();
+            m.put("teachPlanId", plan.getTeachPlanId());
+            m.put("teacherId", plan.getTeacher().getPersonId());
+            m.put("teacherName", plan.getTeacher().getPerson().getName());
+            m.put("classScheduleId", plan.getClassSchedule().getClassScheduleId());
+            m.put("courseId", plan.getClassSchedule().getCourse().getCourseId());
+            m.put("courseName", plan.getClassSchedule().getCourse().getName());
+            m.put("courseNumber", plan.getClassSchedule().getCourse().getNum());
+            m.put("semester", plan.getClassSchedule().getSemester());
+            m.put("year", plan.getClassSchedule().getYear());
+            m.put("classTime", plan.getClassSchedule().getClassTime());
+            m.put("classLocation", plan.getClassSchedule().getClassLocation());
+            return m;
+        }).collect(Collectors.toList()));
+
+    }
+
+    public DataResponse checkTeachPlanByInfo(@Valid DataRequest dataRequest) {
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+        String courseNum = dataRequest.getString("courseNum");
+        Integer classNumber = dataRequest.getInteger("classNumber");
+
+        if (year == null || semester == null || courseNum == null || classNumber == null) {
+            return CommonMethod.getReturnMessageError("学年、学期、课程编号和班级号不能为空");
+        }
+
+        List<ClassSchedule> plans = classScheduleRepository.findByCourse_NumAndYearAndSemester(
+                courseNum, year, semester);
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (var plan : plans) {
+            Map<String, Object> m = new HashMap<>();
+
+            m.put("classScheduleId", plan.getClassScheduleId());
+
+            dataList.add(m);
+        }
+        if (dataList.isEmpty()) {
+            return CommonMethod.getReturnMessageError("没有找到对应的教学计划");
+        }
+        if (dataList.size() > 1) {
+            return CommonMethod.getReturnMessageError("找到多个教学计划，请检查数据库，存在异常数据需要运维排查");
+        }
+        return CommonMethod.getReturnData(dataList.getFirst());
+    }
+
+    public DataResponse getStudentPlanList(@Valid DataRequest dataRequest) {
+//        Integer studentId = dataRequest.getInteger("studentId");
+        String studentNum = dataRequest.getString("studentNum");
+        if (studentNum == null) {
+            return CommonMethod.getReturnMessageError("学生ID不能为空");
+        }
+
+        List<ClassSchedule> plans = scoreRepository.findByStudent_Person_Num(studentNum).stream()
+                .map(Score::getClassSchedule).toList();
+
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (ClassSchedule classSchedule : plans) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("classScheduleId", classSchedule.getClassScheduleId());
+            m.put("classNum", classSchedule.getClassNumber());
+            m.put("courseId", classSchedule.getCourse().getCourseId());
+            m.put("courseName", classSchedule.getCourse().getName());
+            m.put("courseNumber", classSchedule.getCourse().getNum());
+            m.put("credit", classSchedule.getCourse().getCredit());
+            m.put("semester", classSchedule.getSemester());
+            m.put("year", classSchedule.getYear());
+            m.put("classTime", classSchedule.getClassTime());
+            m.put("classLocation", classSchedule.getClassLocation());
+            dataList.add(m);
+        }
+
+        return CommonMethod.getReturnData(dataList);
     }
 }

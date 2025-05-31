@@ -7,9 +7,11 @@ import cn.edu.sdu.java.server.models.Student;
 import cn.edu.sdu.java.server.payload.request.DataRequest;
 import cn.edu.sdu.java.server.payload.response.DataResponse;
 import cn.edu.sdu.java.server.repositorys.ClassScheduleRepository;
+import cn.edu.sdu.java.server.repositorys.CourseRepository;
 import cn.edu.sdu.java.server.repositorys.ScoreRepository;
 import cn.edu.sdu.java.server.repositorys.StudentRepository;
 import cn.edu.sdu.java.server.util.CommonMethod;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -29,24 +31,27 @@ public class CourseSelectionService {
     private final ClassScheduleRepository classScheduleRepository;
     private final ScoreRepository scoreRepository;
     private final SystemService systemService;
-
+    private final CourseRepository courseRepository;
     public CourseSelectionService(StudentRepository studentRepository,
                                  ClassScheduleRepository classScheduleRepository,
                                  ScoreRepository scoreRepository,
-                                 SystemService systemService) {
+                                 SystemService systemService,
+                                  CourseRepository courseRepository
+    ) {
         this.studentRepository = studentRepository;
         this.classScheduleRepository = classScheduleRepository;
         this.scoreRepository = scoreRepository;
         this.systemService = systemService;
+        this.courseRepository = courseRepository;
     }
 
     /**
      * 获取学生的已选课程列表
      */
     public DataResponse getSelectedCourses(DataRequest dataRequest) {
-//        Integer personId = dataRequest.getInteger("personId");
+        Integer personId = dataRequest.getInteger("personId");
         String semester = dataRequest.getString("semester");
-        Integer personId = getPersonId();
+
         String year = dataRequest.getString("year");
         
         if (personId == null) {
@@ -113,7 +118,7 @@ public class CourseSelectionService {
         List<Score> selectedScores = scoreRepository.findStudentSemesterCourses(personId, semester, year);
         Set<Integer> selectedCourseIds = new HashSet<>();
         Set<Integer> selectedClassIds = new HashSet<>();
-        
+        List<Score> selectedScoreHistory = scoreRepository.findByStudentPersonId(personId);
         for (Score score : selectedScores) {
             selectedCourseIds.add(score.getClassSchedule().getCourse().getCourseId());
             selectedClassIds.add(score.getClassSchedule().getClassScheduleId());
@@ -124,6 +129,16 @@ public class CourseSelectionService {
         for (ClassSchedule classSchedule : allClasses) {
             // 如果该课程的班级尚未被学生选择，则添加到可选列表
             if (!selectedClassIds.contains(classSchedule.getClassScheduleId())) {
+                // 如果precourse没有被选择，禁止选课
+                Course course = classSchedule.getCourse();
+                if (course.getPreCourse() != null) {
+                    Optional<Score> preCourseScore = selectedScoreHistory.stream()
+                            .filter(s -> s.getClassSchedule().getCourse().getCourseId().equals(course.getPreCourse().getCourseId()))
+                            .findFirst();
+                    if (preCourseScore.isEmpty()) {
+                        continue; // 如果前置课程未被选，则跳过
+                    }
+                }
                 Map<String, Object> m = new HashMap<>();
                 m.put("classScheduleId", classSchedule.getClassScheduleId());
                 m.put("courseId", classSchedule.getCourse().getCourseId());
@@ -189,13 +204,7 @@ public class CourseSelectionService {
         if (existingScoreOp.isPresent()) {
             return CommonMethod.getReturnMessageError("已选择该教学班级，不能重复选择");
         }
-        
-        // 检查学生是否已选择该课程的其他教学班级
-        List<Score> existingCourseScores = scoreRepository.findByStudentPersonIdAndCourseId(
-                personId, classSchedule.getCourse().getCourseId());
-        if (!existingCourseScores.isEmpty()) {
-            return CommonMethod.getReturnMessageError("该课程的其他教学班级已被选择，不能重复选择同一课程");
-        }
+
         
         // 创建新的成绩记录
         Score score = new Score();
@@ -206,8 +215,16 @@ public class CourseSelectionService {
         
         scoreRepository.save(score);
         systemService.modifyLog(score, true);
-        
-        return CommonMethod.getReturnMessageOK("选课成功");
+        // get score id
+        Integer scoreId = score.getScoreId();
+        // 返回选课成功的消息和成绩记录ID
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("scoreId", scoreId);
+        responseData.put("courseId", classSchedule.getCourse().getCourseId());
+        responseData.put("classScheduleId", classScheduleId);
+
+        return CommonMethod.getReturnData(responseData, "选课成功");
+//        return CommonMethod.getReturnMessageOK("选课成功");
     }
     
     /**
@@ -226,12 +243,12 @@ public class CourseSelectionService {
         }
         
         if (scoreId == null) {
-            return CommonMethod.getReturnMessageError("成绩记录ID不能为空");
+            return CommonMethod.getReturnMessageError("记录号不能为空");
         }
         
         // 检查成绩记录是否存在
         Optional<Score> scoreOp = scoreRepository.findById(scoreId);
-        if (!scoreOp.isPresent()) {
+        if (scoreOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("选课记录不存在");
         }
         
@@ -251,5 +268,194 @@ public class CourseSelectionService {
         scoreRepository.deleteById(scoreId);
         
         return CommonMethod.getReturnMessageOK("退课成功");
+    }
+
+    public DataResponse getSelectedCoursesAll(@Valid DataRequest dataRequest) {
+        var semester = dataRequest.getString("semester");
+        var year = dataRequest.getString("year");
+        if (semester == null || year == null) {
+            return CommonMethod.getReturnMessageError("学期和年份不能为空");
+        }
+        var data = scoreRepository.findBySemesterAndYear(semester, year);
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (var o : data) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("scoreId", o.getScoreId());
+            m.put("studentId", o.getStudent().getPersonId());
+            m.put("studentNum", o.getStudent().getPerson().getNum());
+            m.put("studentName", o.getStudent().getPerson().getName());
+            m.put("classScheduleId", o.getClassSchedule().getClassScheduleId());
+            m.put("courseId", o.getClassSchedule().getCourse().getCourseId());
+            m.put("courseName", o.getClassSchedule().getCourse().getName());
+            m.put("courseNum", o.getClassSchedule().getCourse().getNum());
+            m.put("credit", o.getClassSchedule().getCourse().getCredit());
+            m.put("classNumber", o.getClassSchedule().getClassNumber().toString());
+            m.put("semester", o.getClassSchedule().getSemester());
+            m.put("year", o.getClassSchedule().getYear());
+            m.put("classTime", o.getClassSchedule().getClassTime());
+            m.put("classLocation", o.getClassSchedule().getClassLocation());
+            m.put("mark", o.getMark());
+            m.put("ranking", o.getRanking());
+            m.put("teachers", o.getClassSchedule().getTeachers().stream()
+                    .map(t -> t.getPerson().getName()).toList());
+            dataList.add(m);
+        }
+
+        if (dataList.isEmpty()) {
+            return CommonMethod.getReturnMessageError("没有选课记录");
+        } else {
+            return CommonMethod.getReturnData(dataList);
+        }
+    }
+
+    public DataResponse getAvailableCoursesAll(@Valid DataRequest dataRequest) {
+        var semester = dataRequest.getString("semester");
+        var year = dataRequest.getString("year");
+        if (semester == null || year == null) {
+            return CommonMethod.getReturnMessageError("学期和年份不能为空");
+        }
+
+        // 获取当前学期所有课程班级
+        List<ClassSchedule> allClasses = classScheduleRepository.findCurrentSemesterClasses(semester, year);
+
+        List<Map<String, Object>> dataList = new ArrayList<>();
+        for (ClassSchedule classSchedule : allClasses) {
+            Map<String, Object> m = new HashMap<>();
+            m.put("classScheduleId", classSchedule.getClassScheduleId());
+            m.put("courseId", classSchedule.getCourse().getCourseId());
+            m.put("courseName", classSchedule.getCourse().getName());
+            m.put("courseNum", classSchedule.getCourse().getNum());
+            m.put("credit", classSchedule.getCourse().getCredit());
+            m.put("classNumber", classSchedule.getClassNumber().toString());
+            m.put("semester", classSchedule.getSemester());
+            m.put("year", classSchedule.getYear());
+            m.put("classTime", classSchedule.getClassTime());
+            m.put("classLocation", classSchedule.getClassLocation());
+
+            // 显示这个课程的有关老师
+            List<String> teachers = new ArrayList<>();
+            for (var teacher : classSchedule.getTeachers()) {
+                teachers.add(teacher.getPerson().getName());
+            }
+            m.put("teachers", teachers);
+
+            dataList.add(m);
+        }
+
+        return CommonMethod.getReturnData(dataList);
+    }
+
+    public DataResponse selectCourseForStudent(@Valid DataRequest dataRequest) {
+        String studentNum = dataRequest.getString("studentNum");
+//        Integer classScheduleId = dataRequest.getInteger("classScheduleId");
+        String courseNum = dataRequest.getString("courseNum");
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+        Integer teachClassNum = dataRequest.getInteger("classNum");
+        if (studentNum == null || courseNum == null || year == null || semester == null || teachClassNum == null) {
+            return CommonMethod.getReturnMessageError("学生ID和教学班级ID不能为空");
+        }
+        Optional<Course> courseOp = courseRepository.findByNum(courseNum);
+        if (courseOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("这个课程不存在");
+        }
+        // 查找这个课程对应的班级号码有没有匹配的
+        Optional<ClassSchedule> classOp = classScheduleRepository.findByClassNumberAndSemesterAndYearAndCourse_CourseId(
+                teachClassNum, semester, year, courseOp.get().getCourseId());
+        if (classOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("这个教学班级不存在");
+        }
+        // 检查学生是否存在
+        Optional<Student> studentOp = studentRepository.findByPersonNum(studentNum);
+        if (studentOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("这个学生不存在");
+        }
+        Student student = studentOp.get();
+
+        // 检查教学班级是否存在
+        ClassSchedule classSchedule = classOp.get();
+
+        // 检查学生是否已选择该教学班级
+        Optional<Score> existingScoreOp = scoreRepository.findByStudentPersonIdAndClassScheduleClassScheduleId(
+                studentOp.get().getPersonId(), classSchedule.getClassScheduleId());
+        if (existingScoreOp.isPresent()) {
+            return CommonMethod.getReturnMessageError("已选择该教学班级，不能重复选择");
+        }
+
+        // 创建新的成绩记录
+        Score score = new Score();
+        score.setStudent(student);
+        score.setClassSchedule(classSchedule);
+        score.setMark(null); // 初始成绩为空
+        score.setRanking(null); // 初始排名为空
+
+        scoreRepository.save(score);
+        systemService.modifyLog(score, true);
+
+        return CommonMethod.getReturnMessageOK("选课成功");
+    }
+
+    public DataResponse dropCourseForStudent(@Valid DataRequest dataRequest) {
+        String studentNum = dataRequest.getString("studentNum");
+        Integer classNum = dataRequest.getInteger("classNum");
+        String courseNum = dataRequest.getString("courseNum");
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+
+        var score = scoreRepository.findByStudent_Person_NumAndClassSchedule_Course_NumAndClassSchedule_ClassNumberAndClassSchedule_yearAndClassSchedule_semester(
+                studentNum, courseNum, classNum, year, semester);
+        // 检查是否已有成绩
+        if (score == null) {
+            return CommonMethod.getReturnMessageError("没有找到这个选课记录");
+        }
+        if (score.getMark() != null) {
+            return CommonMethod.getReturnMessageError("该课程已有成绩，不能退课");
+        }
+
+        // 删除成绩记录
+        scoreRepository.deleteById(score.getScoreId());
+
+        return CommonMethod.getReturnMessageOK("退课成功");
+    }
+
+    public DataResponse verifyStudentCourseSelection(@Valid DataRequest dataRequest) {
+        String studentNum = dataRequest.getString("studentNum");
+        String courseNum = dataRequest.getString("courseNum");
+        String year = dataRequest.getString("year");
+        String semester = dataRequest.getString("semester");
+        Integer classNum = dataRequest.getInteger("classNum");
+
+        if (studentNum == null || courseNum == null || year == null || semester == null || classNum == null) {
+            return CommonMethod.getReturnMessageError("学生ID、课程编号、学期和年份不能为空");
+        }
+
+        // 检查学生是否存在
+        Optional<Student> studentOp = studentRepository.findByPersonNum(studentNum);
+        if (studentOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("学生不存在");
+        }
+
+        // 检查课程是否存在
+        Optional<Course> courseOp = courseRepository.findByNum(courseNum);
+        if (courseOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("课程不存在");
+        }
+
+        // 检查教学班级是否存在
+        Optional<ClassSchedule> classOp = classScheduleRepository.findByClassNumberAndSemesterAndYearAndCourse_CourseId(
+                classNum, semester, year, courseOp.get().getCourseId());
+        if (classOp.isEmpty()) {
+            return CommonMethod.getReturnMessageError("教学班级不存在");
+        }
+
+        // 检查学生是否已选该课程
+        Optional<Score> scoreOp = Optional.ofNullable(scoreRepository.findByStudent_Person_NumAndClassSchedule_Course_NumAndClassSchedule_ClassNumberAndClassSchedule_yearAndClassSchedule_semester(
+                studentNum, courseNum, classNum, year, semester));
+
+        if (scoreOp.isPresent()) {
+            return CommonMethod.getReturnData(scoreOp.get().getScoreId());
+        }
+
+        return CommonMethod.getReturnMessageOK("验证通过，可以进行选课操作");
     }
 }

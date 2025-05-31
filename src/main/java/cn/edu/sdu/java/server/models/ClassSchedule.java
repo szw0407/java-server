@@ -48,5 +48,7 @@ public class ClassSchedule {
     )
     private List<Teacher> teachers;
 
-
+    @OneToMany
+    @JoinColumn(name = "class_schedule_id")
+    private List<Score> scores;
 }
