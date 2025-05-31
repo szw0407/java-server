@@ -32,6 +32,6 @@ jobs:
     - name: Upload JAR file
       uses: actions/upload-artifact@v4
       with:
-        name: java-fx
+        name: java-server-output
         path: target/*.jar
         
