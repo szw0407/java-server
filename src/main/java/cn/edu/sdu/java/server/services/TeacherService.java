@@ -129,9 +129,9 @@ public class TeacherService {
                     t = op.get();
                     Optional<User> uOp = userRepository.findById(personId);
 
-                    uOp.ifPresent(userRepository::delete);
+
                     Person p = t.getPerson();
-                    teacherRepository.delete(t);
+                    teacherRepository.delete(t);uOp.ifPresent(userRepository::delete);
                     personRepository.delete(p);
                 }
                 return CommonMethod.getReturnMessageOK();  //通知前端操作正常
