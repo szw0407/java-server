@@ -20,7 +20,7 @@ public class Training {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "student_id", referencedColumnName = "person_id")
     @JsonIgnore
     private Student student;

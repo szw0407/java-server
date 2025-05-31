@@ -22,7 +22,7 @@ public class InnovationProject {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id; // 独立自增主键
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "student_id", referencedColumnName = "person_id")
     @JsonIgnore
     private Student student;

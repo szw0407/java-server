@@ -16,5 +16,4 @@ public class StudentHonor {
     private Integer studentId;
     private String title;
     private String description;
-
 }

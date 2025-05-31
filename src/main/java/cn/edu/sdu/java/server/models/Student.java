@@ -31,7 +31,6 @@ public class Student {
     private Integer personId;
 
     @OneToOne
-    @MapsId // Use MapsId to indicate this relationship shares the primary key
     @JoinColumn(name="person_id")
     @JsonIgnore
     private Person person;
@@ -42,6 +41,31 @@ public class Student {
 
     @Size(max = 50)
     private String className;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Set<AcademicCompetition> academicCompetitions;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Set<SocialPractice> socialPractices;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Set<Internship> internships;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private Set<TechnicalAchieve> technicalAchieves;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+    private  Set<InnovationProject> innovationProjects;
+
+    @OneToMany(mappedBy = "student", cascade = CascadeType.REMOVE)
+    @JsonIgnore
+     private Set<Training> trainings;
+
 
 
 }

@@ -21,7 +21,7 @@ public class AcademicCompetition {
     private Integer id;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.REMOVE)
     @JoinColumn(name = "student_id", referencedColumnName = "person_id")
     @JsonIgnore
     private Student student;
