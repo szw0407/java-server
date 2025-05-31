@@ -106,63 +106,54 @@ public class StudentSocialActService {
         return CommonMethod.getReturnData(dataList);  //按照测试框架规范会送Map的list
     }
     public DataResponse studentSocialActEditSave(DataRequest dataRequest) throws ParseException {
-        //Integer id = dataRequest.getInteger("id");
         Map<String, Object> form = dataRequest.getMap("form");
-        System.out.println(form);
-        Integer id = CommonMethod.getInteger(form, "id");
         String studentIdStr = CommonMethod.getString(form, "studentId");
-        StudentSocialActivity socialActivity = null;
-        Optional<StudentSocialActivity> op;
-        boolean isNew = false;
+        StudentSocialActivity socialActivity = new StudentSocialActivity();
 
-        if (id != null) {
-            op = studentSocialActRepository.findById(id);
-            if (op.isPresent()) {
-                socialActivity = op.get();
-                return CommonMethod.getReturnMessageError("保存失败，您填写的活动序号已经存在！");
+        if (studentIdStr != null && !studentIdStr.isEmpty()) {
+            Optional<Student> studentOptional = studentRepository.findByPersonNum(studentIdStr);
+            if (studentOptional.isPresent()) {
+                socialActivity.setStudent(studentOptional.get());
             } else {
-                socialActivity = new StudentSocialActivity();
-                socialActivity.setId(id);
-                if (studentIdStr != null && !studentIdStr.isEmpty()) {
-                    //socialActivity.setStudent(Integer.parseInt(studentIdStr));
-                    Optional<Student> studentOptional = studentRepository.findByPersonNum(studentIdStr);
-                    if (studentOptional.isPresent()) {
-                        socialActivity.setStudent(studentOptional.get());
-                    } else {
-                        return CommonMethod.getReturnMessageError("保存失败，您填写的学号不存在！");
-                    }
-                    //socialActivity.setStudent(studentRepository.findByPersonNum(studentIdStr).orElse(null));
-//                 //else if (form.get("studentId") instanceof Integer) {
-//                    //socialActivity.setStudent((Integer) form.get("studentId"));
-//                    socialActivity.setStudent(studentRepository.findById((Integer) form.get("studentId")).orElse(null));
-               }
-
-//                socialActivity.setTitle(CommonMethod.getString(form, "title"));
-                socialActivity.setName(CommonMethod.getString(form, "name"));
-                socialActivity.setType(CommonMethod.getString(form, "type"));
-                String startTimeStr = CommonMethod.getString(form, "startTime");
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
-                Date startTime = dateFormat.parse(startTimeStr);
-                socialActivity.setStartTime(startTime);
-                String endTimeStr = CommonMethod.getString(form, "endTime");
-                Date endTime = dateFormat.parse(endTimeStr);
-                socialActivity.setEndTime(endTime);
-                socialActivity.setLocation(CommonMethod.getString(form, "location"));
-                socialActivity.setRole(CommonMethod.getString(form, "role"));
-
-                socialActivity.setDescription(CommonMethod.getString(form, "description"));
-
-                try {
-                    studentSocialActRepository.saveAndFlush(socialActivity);
-                } catch (ObjectOptimisticLockingFailureException e) {
-                    return CommonMethod.getReturnMessageError("数据已被其他用户修改，请刷新后重试！");
-                }
-
+                return CommonMethod.getReturnMessageError("保存失败，您填写的学号不存在！");
             }
-        } else {
-            socialActivity = new StudentSocialActivity();
-            isNew = true;
         }
+
+        socialActivity.setName(CommonMethod.getString(form, "name"));
+        socialActivity.setType(CommonMethod.getString(form, "type"));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+        String startTimeStr = CommonMethod.getString(form, "startTime");
+        String endTimeStr = CommonMethod.getString(form, "endTime");
+
+        // 校验并解析开始时间
+        if (startTimeStr != null && !startTimeStr.equals("请选择开始日期")) {
+            try {
+                socialActivity.setStartTime(dateFormat.parse(startTimeStr));
+            } catch (ParseException e) {
+                return CommonMethod.getReturnMessageError("开始日期格式错误，请重新选择！");
+            }
+        }
+
+        // 校验并解析结束时间
+        if (endTimeStr != null && !endTimeStr.equals("请选择结束日期")) {
+            try {
+                socialActivity.setEndTime(dateFormat.parse(endTimeStr));
+            } catch (ParseException e) {
+                return CommonMethod.getReturnMessageError("结束日期格式错误，请重新选择！");
+            }
+        }
+
+        socialActivity.setLocation(CommonMethod.getString(form, "location"));
+        socialActivity.setRole(CommonMethod.getString(form, "role"));
+        socialActivity.setDescription(CommonMethod.getString(form, "description"));
+
+        try {
+            studentSocialActRepository.save(socialActivity);
+        } catch (ObjectOptimisticLockingFailureException e) {
+            return CommonMethod.getReturnMessageError("数据已被其他用户修改，请刷新后重试！");
+        }
+
         return CommonMethod.getReturnData(socialActivity.getId());
     }
 

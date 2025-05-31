@@ -14,28 +14,34 @@ import java.util.Date;
 @Table(name = "student_social_activity")
 public class StudentSocialActivity {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 自动生成主键
     private Integer id;
 
-//    private Integer studentId;
     @ManyToOne
-    @JoinColumn(name = "personId")
+    @JoinColumn(name = "personId", nullable = false) // 外键关联，不能为空
     @JsonIgnore
     private Student student;
 
     @Size(max = 50)
-    private String name;//活动名称
-    @Size(max = 50)
-    private String type;//活动类型
-
-    private Date startTime;//活动开始时间
-
-    private Date endTime;//活动结束时间
+    @Column(nullable = false) // 活动名称不能为空
+    private String name;
 
     @Size(max = 50)
-    private String location;//活动地点
-    @Size(max = 50)
-    private String description;//活动描述
-    @Size(max = 50)
-    private String role;//活动角色
+    @Column(nullable = false) // 活动类型不能为空
+    private String type;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date startTime; // 活动开始时间
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date endTime; // 活动结束时间
+
+    @Size(max = 50)
+    private String location; // 活动地点
+
+    @Size(max = 50)
+    private String description; // 活动描述
+
+    @Size(max = 50)
+    private String role; // 活动角色
 }
