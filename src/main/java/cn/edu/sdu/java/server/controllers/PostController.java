@@ -54,4 +54,8 @@ public class PostController {
     public DataResponse toggleTopPost(@Valid @RequestBody DataRequest dataRequest) {
         return postService.toggleTopPost(dataRequest);
     }
+    @PostMapping("/commentStatistics/daily")
+    public DataResponse getDailyCommentStatistics() {
+        return postService.getDailyCommentStatistics();
+    }
 }
