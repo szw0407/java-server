@@ -172,18 +172,21 @@ public class TeachPlanService {
      * 移除教师的教学计划
      */
     public DataResponse removeTeacherPlan(DataRequest dataRequest) {
-        Integer teachPlanId = dataRequest.getInteger("teachPlanId");
+        Integer id = dataRequest.getInteger("classScheduleId");
         
-        if (teachPlanId == null) {
+        if (id == null) {
             return CommonMethod.getReturnMessageError("教学计划ID不能为空");
         }
         
-        Optional<TeachPlan> planOp = teachPlanRepository.findById(teachPlanId);
+        Optional<ClassSchedule> planOp = classScheduleRepository.findByClassScheduleId(id);
         if (planOp.isEmpty()) {
             return CommonMethod.getReturnMessageError("教学计划不存在");
         }
-        
-        teachPlanRepository.deleteById(teachPlanId);
+        // check teach plans
+        List<TeachPlan> teachPlans = teachPlanRepository.findTeachPlansByClassSchedule(planOp.get());
+        // delete all teach plans
+        teachPlanRepository.deleteAll(teachPlans);
+        classScheduleRepository.deleteById(planOp.get().getClassScheduleId());
         return CommonMethod.getReturnMessageOK();
     }
     
@@ -255,7 +258,14 @@ public class TeachPlanService {
         Integer classScheduleId = dataRequest.getInteger("classScheduleId");
         String classTime = dataRequest.getString("classTime");
         String classLocation = dataRequest.getString("classLocation");
+        Integer classNum= dataRequest.getInteger("classNumber");
+        String semester = dataRequest.getString("semester");
+        String year = dataRequest.getString("year");
+        Integer courseId = dataRequest.getInteger("courseId");
+
+        Course course = courseRepository.findById(courseId).get();
         List<Integer> ids = (List<Integer>) dataRequest.getList("teacherIds");
+
         if (classScheduleId == null) {
             return CommonMethod.getReturnMessageError("教学班级ID不能为空");
         }
@@ -266,14 +276,20 @@ public class TeachPlanService {
         }
         
         ClassSchedule classSchedule = classScheduleOp.get();
-        if (classTime != null) {
+
             classSchedule.setClassTime(classTime);
-        }
-        if (classLocation != null) {
+            classSchedule.setSemester(semester);
+            classSchedule.setYear(year);
+
+
             classSchedule.setClassLocation(classLocation);
-        }
+
+            classSchedule.setClassNumber(classNum);
+            classSchedule.setCourse(course);
+
         
         classScheduleRepository.save(classSchedule);
+        // 处理老师
         teachPlanRepository.deleteAll(teachPlanRepository.findTeachPlansByClassSchedule(classSchedule));
         for (Integer teacherId : ids) {
             Optional<Teacher> teacherOp = teacherRepository.findById(teacherId);

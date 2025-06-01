@@ -80,9 +80,11 @@ public class CourseService {
         Course pc = null;
         if (preCourseId != null) {
             op = courseRepository.findById(preCourseId);
-            if (op.isPresent())
+            if (op.isPresent()) {
                 pc = op.get();
-        }
+
+            }
+        }c.setPreCourse(pc);
         c.setNum(num);
         c.setName(name);
         c.setCredit(credit);

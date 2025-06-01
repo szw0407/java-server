@@ -36,4 +36,6 @@ public interface ClassScheduleRepository extends JpaRepository<ClassSchedule, In
     Optional<ClassSchedule> findByClassNumberAndSemesterAndYearAndCourse_CourseId(Integer classNumber, String semester, String year, Integer courseId);
 
     List<ClassSchedule> findByCourse_NumAndYearAndSemester(String courseNum, String year, String semester);
+
+    Optional<ClassSchedule> findByClassScheduleId(Integer id);
 }
